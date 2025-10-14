@@ -41,22 +41,18 @@
         ]
 
         text(13pt)[
-            Seb Hall #link("mailto:samh25@bath.ac.uk") \
-            Department of Electronic & Electrical Engineering \
-            University of Bath \
-        ]
-
-        text(13pt, top-edge: 15pt)[
-            24th October 2025
+            Seb Hall #link("mailto:samh25@bath.ac.uk"), 24th October 2025\
+            Department of Electronic & Electrical Engineering, University of Bath \
         ]
     }
 )
 
 // MARK: INTRO
-= Introduction
 
 // MARK: EX 1
 = Exercise 1 - Logical Operators
+
+Truth tables, state space graphs and neural network weights and biases for the AND, NAND, OR and XOR logical operators are shown below. In the graphs, red indicates value of 0 and blue indicates value of 1.
 
 == AND Operator
 
@@ -69,7 +65,7 @@ inset: (left: -5%, right: 0%),
     [
         #figure(
             caption: "AND Truth Table",
-            block(width: 100%,
+            block(width: 100%, inset: (top: 4%, bottom: 12%),
                 align(center, //Align starts here
                     table(
                         columns: (auto, auto, auto),
@@ -94,106 +90,183 @@ inset: (left: -5%, right: 0%),
     [
 
         #figure(
-            image("resources/and_plot.png", width: 100%),
+            block(inset: (top: -5%, bottom: -8%, left: -5%, right: 5%),
+            [
+                #image("resources/and_plot.png", width: 100%)
+            ]),
             caption: [AND State Space],
-            
+
         )  <and-state-space>
     ] 
     )
 ])
 
-
-
 #figure(
     image("resources/and_network_diagram.png", width: 100%),
-    caption: [AND Network Diagram],
+    caption: [AND network diagram, showing \ weights (w#sub[1] = 1, w#sub[2] = 1) and bias (b = -1.5).],
 )  <and-network-diagram>
 
 == NAND Operator
  
-#figure(
-    caption: "NAND Truth Table",
-    block(width: auto,
-        align(center, //Align starts here
-            table(
-                columns: (auto, auto, auto),
-                inset: 5pt,
-                align: horizon + center,
-                stroke: (col, row) => (
-                    bottom: if row == 0 { 1pt } else { 0pt },
-                    right: if col == 1 { 1pt } else { 0pt },
-                ),
-                table.header(
-                    [*A*], [*B*], [*NAND(A,B)*],
-                ),
-                [0], [0], [1],
-                [1], [0], [1],
-                [0], [1], [1],
-                [1], [1], [0],
+#block(width: 110%,
+inset: (left: -5%, right: 0%),
+[
+    #grid(
+    columns: (0.5fr, 0.5fr),
+    align: horizon,
+    [
+        #figure(
+            caption: "NAND Truth Table",
+            block(width: 100%, inset: (top: 4%, bottom: 12%),
+                align(center, //Align starts here
+                    table(
+                        columns: (auto, auto, auto),
+                        inset: 7.5pt,
+                        align: horizon + center,
+                        stroke: (col, row) => (
+                            bottom: if row == 0 { 1pt } else { 0pt },
+                            right: if col == 1 { 1pt } else { 0pt },
+                        ),
+                        table.header(
+                            [*A*], [*B*], [*NAND(A,B)*],
+                        ),
+                        [0], [0], [1],
+                        [1], [0], [1],
+                        [0], [1], [1],
+                        [1], [1], [0],
+                    )
+                )
             )
-        )
+        ) <nand-truth-table>
+    ],
+    [
+
+        #figure(
+            block(inset: (top: -5%, bottom: -8%, left: -5%, right: 5%),
+            [
+                #image("resources/nand_plot.png", width: 100%)
+            ]),
+            caption: [NAND State Space],
+
+        )  <nand-state-space>
+    ] 
     )
-) <nand-truth-table>
+])
 
 #figure(
-    image("resources/nand_plot.png", width: 80%),
-    caption: [NAND State Space Representation],
-)  <and-state-space>
+    image("resources/nand_network_diagram.png", width: 100%),
+    caption: [NAND network diagram, showing \ weights (w#sub[1] = -1, w#sub[2] = -1) and bias (b = 1.5).],
+)  <nand-network-diagram>
 
 == OR Operator
- 
-#figure(
-    caption: "OR Truth Table",
-    block(width: auto,
-        align(center, //Align starts here
-            table(
-                columns: (auto, auto, auto),
-                inset: 5pt,
-                align: horizon + center,
-                stroke: (col, row) => (
-                    bottom: if row == 0 { 1pt } else { 0pt },
-                    right: if col == 1 { 1pt } else { 0pt },
-                ),
-                table.header(
-                    [*A*], [*B*], [*OR(A,B)*],
-                ),
-                [0], [0], [0],
-                [1], [0], [1],
-                [0], [1], [1],
-                [1], [1], [1],
+
+#block(width: 110%,
+inset: (left: -5%, right: 0%),
+[
+    #grid(
+    columns: (0.5fr, 0.5fr),
+    align: horizon,
+    [
+        #figure(
+            caption: "OR Truth Table",
+            block(width: 100%, inset: (top: 4%, bottom: 12%),
+                align(center, //Align starts here
+                    table(
+                        columns: (auto, auto, auto),
+                        inset: 7.5pt,
+                        align: horizon + center,
+                        stroke: (col, row) => (
+                            bottom: if row == 0 { 1pt } else { 0pt },
+                            right: if col == 1 { 1pt } else { 0pt },
+                        ),
+                        table.header(
+                            [*A*], [*B*], [*OR(A,B)*],
+                        ),
+                        [0], [0], [0],
+                        [1], [0], [1],
+                        [0], [1], [1],
+                        [1], [1], [1],
+                    )
+                )
             )
-        )
+        ) <or-truth-table>
+    ],
+    [
+
+        #figure(
+            block(inset: (top: -5%, bottom: -8%, left: -5%, right: 5%),
+            [
+                #image("resources/or_plot.png", width: 100%)
+            ]),
+            caption: [OR State Space],
+
+        )  <or-state-space>
+    ] 
     )
-) <or-truth-table>
+])
+
+#figure(
+    image("resources/or_network_diagram.png", width: 100%),
+    caption: [OR network diagram, showing \ weights (w#sub[1] = 1, w#sub[2] = 1) and bias (b = -0.5).],
+)  <or-network-diagram>
 
 == XOR Operator
  
-#figure(
-    caption: "XOR Truth Table",
-    block(width: auto,
-        align(center, //Align starts here
-            table(
-                columns: (auto, auto, auto),
-                inset: 5pt,
-                align: horizon + center,
-                stroke: (col, row) => (
-                    bottom: if row == 0 { 1pt } else { 0pt },
-                    right: if col == 1 { 1pt } else { 0pt },
-                ),
-                table.header(
-                    [*A*], [*B*], [*XOR(A,B)*],
-                ),
-                [0], [0], [0],
-                [1], [0], [1],
-                [0], [1], [1],
-                [1], [1], [0],
+
+#block(width: 110%,
+inset: (left: -5%, right: 0%),
+[
+    #grid(
+    columns: (0.5fr, 0.5fr),
+    align: horizon,
+    [
+        #figure(
+            caption: "XOR Truth Table",
+            block(width: 100%, inset: (top: 4%, bottom: 12%),
+                align(center, //Align starts here
+                    table(
+                        columns: (auto, auto, auto),
+                        inset: 7.5pt,
+                        align: horizon + center,
+                        stroke: (col, row) => (
+                            bottom: if row == 0 { 1pt } else { 0pt },
+                            right: if col == 1 { 1pt } else { 0pt },
+                        ),
+                        table.header(
+                            [*A*], [*B*], [*XOR(A,B)*],
+                        ),
+                        [0], [0], [0],
+                        [1], [0], [1],
+                        [0], [1], [1],
+                        [1], [1], [0],
+                    )
+                )
             )
-        )
+        ) <xor-truth-table>
+    ],
+    [
+
+        #figure(
+            block(inset: (top: -5%, bottom: -8%, left: -5%, right: 5%),
+            [
+                #image("resources/xor_plot.png", width: 100%)
+            ]),
+            caption: [XOR State Space],
+
+        )  <xor-state-space>
+    ] 
     )
-) <xor-truth-table>
+])
+
+#figure(
+    image("resources/xor_network_diagram.png", width: 100%),
+    caption: [XOR network diagram, consisting of a hidden layer with AND and OR weights, followed by an output layer, with weights (w#sub[1] = 1, w#sub[2] = 1) and bias (b = -0.5).],
+)  <xor-network-diagram>
+
 
 // MARK: EX 2
 = Exercise 2 - Implementation of a Neural Network for MNIST
+
 
 // MARK: CONCLUSION
 = Conclusion
