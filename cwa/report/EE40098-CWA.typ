@@ -59,35 +59,55 @@
 = Exercise 1 - Logical Operators
 
 == AND Operator
- 
-#figure(
-    caption: "AND Truth Table",
-    block(width: auto,
-        align(center, //Align starts here
-            table(
-                columns: (auto, auto, auto),
-                inset: 5pt,
-                align: horizon + center,
-                stroke: (col, row) => (
-                    bottom: if row == 0 { 1pt } else { 0pt },
-                    right: if col == 1 { 1pt } else { 0pt },
-                ),
-                table.header(
-                    [*A*], [*B*], [*AND(A,B)*],
-                ),
-                [0], [0], [0],
-                [1], [0], [0],
-                [0], [1], [0],
-                [1], [1], [1],
+
+#block(width: 110%,
+inset: (left: -5%, right: 0%),
+[
+    #grid(
+    columns: (0.5fr, 0.5fr),
+    align: horizon,
+    [
+        #figure(
+            caption: "AND Truth Table",
+            block(width: 100%,
+                align(center, //Align starts here
+                    table(
+                        columns: (auto, auto, auto),
+                        inset: 7.5pt,
+                        align: horizon + center,
+                        stroke: (col, row) => (
+                            bottom: if row == 0 { 1pt } else { 0pt },
+                            right: if col == 1 { 1pt } else { 0pt },
+                        ),
+                        table.header(
+                            [*A*], [*B*], [*AND(A,B)*],
+                        ),
+                        [0], [0], [0],
+                        [1], [0], [0],
+                        [0], [1], [0],
+                        [1], [1], [1],
+                    )
+                )
             )
-        )
+        ) <and-truth-table>
+    ],
+    [
+
+        #figure(
+            image("resources/and_plot.png", width: 100%),
+            caption: [AND State Space],
+            
+        )  <and-state-space>
+    ] 
     )
-) <and-truth-table>
+])
+
+
 
 #figure(
-    image("resources/and_plot.png", width: 80%),
-    caption: [AND State Space Representation],
-)  <and-state-space>
+    image("resources/and_network_diagram.png", width: 100%),
+    caption: [AND Network Diagram],
+)  <and-network-diagram>
 
 == NAND Operator
  
