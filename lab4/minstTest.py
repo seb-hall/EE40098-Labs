@@ -1,5 +1,5 @@
 # Load the MNIST test samples CSV file into a list
-test_data_file = open("cwa/MNIST/”mnist_test_10.csv", "r")
+test_data_file = open("cwa/MNIST/mnist_test_10.csv", "r")
 test_data_list = test_data_file.readlines()
 test_data_file.close()
 # Scorecard list for how well the network performs, initially empty
