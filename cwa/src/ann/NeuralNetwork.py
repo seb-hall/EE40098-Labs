@@ -69,5 +69,13 @@ class NeuralNetwork:
         final_outputs = self.activation_function(final_inputs)
 
         return final_outputs
+    
+    def save_to_file(self, filename):
+        numpy.savez_compressed(filename, wih=self.wih, who=self.who)
+
+    def load_from_file(self, filename):
+        data = numpy.load(filename)
+        self.wih = data['wih']
+        self.who = data['who']
 
         

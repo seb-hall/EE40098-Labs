@@ -1,11 +1,14 @@
 # Import numpy for arrays and matplotlib for drawing the numbers
 import numpy
 
-def train(file, net, output_nodes):
+def train(file, net, output_nodes, iteration=0):
     # Load the MNIST 100 training samples CSV file into a list
     training_data_file = open(file, "r")
     training_data_list = training_data_file.readlines()
     training_data_file.close()
+    
+    i = 0
+
     # Train the neural network on each training sample
     for record in training_data_list:
         # Split the record by the commas
@@ -18,4 +21,9 @@ def train(file, net, output_nodes):
         targets[int(all_values[0])] = 0.99
         # Train the network
         net.train(inputs, targets)
+
+        if (i % 1000 == 0):
+            print("Trained record ", i, " out of ", len(training_data_list), " in iteration ", iteration) 
+
+        i += 1
     pass

@@ -31,4 +31,7 @@ def test(file, net):
         pass
     # Calculate the performance score, the fraction of correct answers
     scorecard_array = numpy.asarray(scorecard)
-    print("Performance = ", (scorecard_array.sum() / scorecard_array.size)*100, "%")
+    score_percent = (scorecard_array.sum() / scorecard_array.size)*100
+    print("Performance = ", score_percent, "%")
+
+    return score_percent 

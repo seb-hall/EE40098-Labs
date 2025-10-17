@@ -31,13 +31,33 @@ def perceptron(inputs, weights, bias):
     return output
 
 # Test the perceptron
-inputs = [0.0, 0.0]
-weights = [1.0, 1.0]
-bias = -1.5
+inputs = [1.0, 1.0]
 
 print("Inputs: ", inputs)
-print("Weights: ", weights)
-print("Bias: ", bias)
-print("Result: ", perceptron(inputs, weights, bias))
+
+weights_and = [1.0, 1.0]
+bias_and = -1.5
+result_and = perceptron(inputs, weights_and, bias_and)
+
+print("Weights AND: ", weights_and)
+print("Bias AND: ", bias_and)
+print("Result AND: ", result_and)
+
+weights_or = [1.0, 1.0]
+bias_or = -0.5
+result_or = perceptron(inputs, weights_or, bias_or)
+
+print("Weights OR: ", weights_or)
+print("Bias OR: ", bias_or)
+print("Result OR: ", result_or)
+
+weights_xor = [-1.0, 1.0]
+bias_xor = -0.5
+inputs_xor = [result_and, result_or]
+result_xor = perceptron(inputs_xor, weights_xor, bias_xor)
+
+print("Weights XOR: ", weights_xor)
+print("Bias XOR: ", bias_xor)
+print("Result XOR: ", result_xor)
 
 
