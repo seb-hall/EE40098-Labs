@@ -22,7 +22,7 @@ def train(file, net, output_nodes, iteration=0):
         # Train the network
         net.train(inputs, targets)
 
-        if (i % 1000 == 0):
+        if (i % 1000 == 0 and i > 0):
             print("Trained record ", i, " out of ", len(training_data_list), " in iteration ", iteration) 
 
         i += 1

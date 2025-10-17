@@ -14,14 +14,14 @@ def test(file, net):
         all_values = record.split(",")
         # The correct label is the first value
         correct_label = int(all_values[0])
-        print(correct_label, "Correct label")
+        #print(correct_label, "Correct label")
         # Scale and shift the inputs
         inputs = (numpy.asarray(all_values[1:], dtype=numpy.float64) / 255.0 * 0.99) + 0.01
         # Query the network
         outputs = net.query(inputs)
         # The index of the highest value output corresponds to the label
         label = numpy.argmax(outputs)
-        print(label, "Network label")
+        #print(label, "Network label")
         # Append either a 1 or a 0 to the scorecard list
         if (label == correct_label):
             scorecard.append(1)
@@ -32,6 +32,6 @@ def test(file, net):
     # Calculate the performance score, the fraction of correct answers
     scorecard_array = numpy.asarray(scorecard)
     score_percent = (scorecard_array.sum() / scorecard_array.size)*100
-    print("Performance = ", score_percent, "%")
+    #print("Performance = ", score_percent, "%")
 
     return score_percent 
