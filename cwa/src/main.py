@@ -5,13 +5,13 @@ import os
 def seek_optimal_weights():
     import matplotlib.pyplot as plt
 
-    hidden_nodes_min = 25 
-    hidden_nodes_max = 500
+    hidden_nodes_min = 1
+    hidden_nodes_max = 1000
 
-    learning_rate_min = 0.05
-    learning_rate_max = 0.6
+    learning_rate_min = 0.01
+    learning_rate_max = 1.0
 
-    num_attempts = 5000
+    num_attempts = 100000
 
     input_nodes = 784
     output_nodes = 10
@@ -52,7 +52,7 @@ def seek_optimal_weights():
 
     plt.figure(figsize=(9, 6))
     # color = performance, marker size scaled by performance
-    scatter = plt.scatter(hs, lrs, c=perfs, cmap='viridis', s=[0.5 * p for p in perfs], edgecolors='none', zorder=2)
+    scatter = plt.scatter(hs, lrs, c=perfs, cmap='viridis', s=[10], edgecolors='none', zorder=2)
     plt.colorbar(scatter, label='Performance (%)')
     plt.xlabel('Hidden Nodes')
     plt.ylabel('Learning Rate')
