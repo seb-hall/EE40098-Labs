@@ -7,10 +7,10 @@ def seek_optimal_weights():
     import matplotlib.pyplot as plt
 
     hidden_nodes_min = 1
-    hidden_nodes_max = 500
+    hidden_nodes_max = 1000
 
     learning_rate_min = 0.01
-    learning_rate_max = 0.5
+    learning_rate_max = 0.3
 
     num_attempts = 25000
 
