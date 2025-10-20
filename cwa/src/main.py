@@ -1,17 +1,18 @@
 import ann
 import mnist
 import os
+import time
 
 def seek_optimal_weights():
     import matplotlib.pyplot as plt
 
     hidden_nodes_min = 1
-    hidden_nodes_max = 1000
+    hidden_nodes_max = 500
 
     learning_rate_min = 0.01
-    learning_rate_max = 1.0
+    learning_rate_max = 0.5
 
-    num_attempts = 100000
+    num_attempts = 25000
 
     input_nodes = 784
     output_nodes = 10
@@ -23,14 +24,19 @@ def seek_optimal_weights():
     results = []
 
     for i in range(num_attempts):
+            start = time.perf_counter()
+
             # random hidden nodes and learning rate
             hidden_nodes = int(hidden_nodes_min + (hidden_nodes_max - hidden_nodes_min) * os.urandom(1)[0] / 255)
             learning_rate = learning_rate_min + (learning_rate_max - learning_rate_min) * os.urandom(1)[0] / 255
 
             net = ann.NeuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
-            mnist.train("cwa/MNIST/mnist_train_100.csv", net, output_nodes, 1)
-            performance = mnist.test("cwa/MNIST/mnist_test_10.csv", net)
+            mnist.train("cwa/MNIST/fashion_mnist_train_1000.csv", net, output_nodes, 1)
+            performance = mnist.test("cwa/MNIST/fashion_mnist_test_10.csv", net)
+
+            end = time.perf_counter()
+            elapsed_ms = (end - start) * 1000.0
 
             results.append((hidden_nodes, learning_rate, performance))
 
@@ -39,7 +45,7 @@ def seek_optimal_weights():
                 best_hidden_nodes = hidden_nodes
                 best_learning_rate = learning_rate
 
-            print(f"{i}: hidden={hidden_nodes}, lr={learning_rate}, perf={performance}%")
+            print(f"{i}: hidden={hidden_nodes}, lr={learning_rate}, perf={performance}%, time={elapsed_ms:.2f} ms")
 
     print("Best Performance: ", best_performance, "%")
     print("Best Hidden Nodes: ", best_hidden_nodes)
@@ -52,7 +58,7 @@ def seek_optimal_weights():
 
     plt.figure(figsize=(9, 6))
     # color = performance, marker size scaled by performance
-    scatter = plt.scatter(hs, lrs, c=perfs, cmap='viridis', s=[10], edgecolors='none', zorder=2)
+    scatter = plt.scatter(hs, lrs, c=perfs, cmap='viridis', s=[20], edgecolors='none', zorder=2)
     plt.colorbar(scatter, label='Performance (%)')
     plt.xlabel('Hidden Nodes')
     plt.ylabel('Learning Rate')

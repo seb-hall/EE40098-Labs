@@ -267,6 +267,64 @@ inset: (left: -5%, right: 0%),
 // MARK: EX 2
 = Exercise 2 - Implementation of a Neural Network for MNIST
 
+A perceptron-based neural network can be implemented to classify images into discrete categories. For this exercise, a network was implemented to classify MNIST datasets; the first a set of handwritten numeric digits, and the second a collection of items of clothing.
+
+== Neural Network 1 - Numeric Dataset
+
+=== Network Structure
+
+#figure(
+    image("resources/ann_diagram.png", width: 110%),
+    caption: [Artificial Neural Network (ANN) Structure for Classifying MNIST Digits.],
+)  <ann-diagram>
+
+An ANN was implemented as shown in @ann-diagram, consisting of an input layer with 784 input nodes corresponding to the 28x28 grayscale pixels in each image, a hidden layer with a variable number of nodes, and an output layer with 10 nodes corresponding to the 10 output digit classes (0-9).
+
+=== Hyperparameter Search
+
+In order to optimise the performance of the network, two parameters were explored in detail - the learning rate and number of hidden nodes.
+This was achieved with a Monte Carlo search method, which involves defining a parameter space, and evaluating random combinations of parameters within this space to identify an optimal region of combinations (see @monte-carlo-100k-search).
+
+#figure(
+    image("resources/parameters_search_100k.png", width: 110%),
+    caption: [Monte Carlo Search for Hyperparameters of Hidden Nodes and Learning Rate.],
+)  <monte-carlo-100k-search>
+
+For the MNIST digit dataset, a search was performed on the reduced train and test datasets for 100,000 iterations, with learning rates between 0.01 and 1.0, and hidden layers between  and 1000. This was a wide search space, so a large number of samples were required to find optimal parameters. The output of this search was represented as a scatter plot, displaying the test performance of each sample as a colour gradient, from 0-90%. This image was then edited to increase contrast and find a clearer optimal region, shown in @monte-carlo-100k-search-contrasted.
+
+#figure(
+    image("resources/parameters_search_100k-contrasted.png", width: 90%),
+    caption: [High Contrast Monte Carlo Output with Optimal Point Selected.],
+)  <monte-carlo-100k-search-contrasted>
+
+Taking a sample in the center of the largest optimal region produced a point with 254 hidden nodes and a learning rate of 0.11.
+
+=== Training Iteration Search
+
+After selecting optimal values for hidden layer nodes and learning rate, the network was trained with a variety of test iterations to indentify the optimal number of training cycles. The results of this are shown below in @training-iterations-graph.
+
+#figure(
+    image("resources/parameters_search_100k.png", width: 110%),
+    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
+)  <training-iterations-graph>
+
+=== Full Training and Testing
+
+After identifying optimal hyperparameters, the network was trained and tested on the full MNIST dataset. The results for this are shown below:
+
+== Neural Network 2 - Fashion Dataset
+
+The second dataset used was the Fashion MNIST dataset, which consists of 28x28 grayscale images of clothing items instead of numeric digits.
+
+=== Hyperparameter Search
+
+A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each iteration of the Monte Carlo search would take longer to complete. Therefore, a new search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below:
+
+=== Training Iteration Search
+As before, a search for the optimal number of training iterations was performed, with the results shown below:
+
+
+=== Full Training and Testing
 
 // MARK: CONCLUSION
 = Conclusion
@@ -279,12 +337,4 @@ inset: (left: -5%, right: 0%),
     title: none,
     style: "ieee"
 )
-
-
-
-
-
-
-
-
 
