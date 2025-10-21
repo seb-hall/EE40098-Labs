@@ -320,6 +320,12 @@ The second dataset used was the Fashion MNIST dataset, which consists of 28x28 g
 
 A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each iteration of the Monte Carlo search would take longer to complete. Therefore, a new search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below:
 
+#figure(
+    image("resources/fashion_parameters_search_2k-selected.png", width: 100%),
+    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
+)  <training->
+
+
 === Training Iteration Search
 As before, a search for the optimal number of training iterations was performed, with the results shown below:
 
