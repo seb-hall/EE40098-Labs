@@ -293,7 +293,7 @@ This was achieved with a Monte Carlo search method, which involves defining a pa
 For the MNIST digit dataset, a search was performed on the reduced train and test datasets for 100,000 iterations, with learning rates between 0.01 and 1.0, and hidden layers between  and 1000. This was a wide search space, so a large number of samples were required to find optimal parameters. The output of this search was represented as a scatter plot, displaying the test performance of each sample as a colour gradient, from 0-90%. This image was then edited to increase contrast and find a clearer optimal region, shown in @monte-carlo-100k-search-contrasted.
 
 #figure(
-    image("resources/parameters_search_100k-contrasted.png", width: 90%),
+    image("resources/parameters_search_100k-contrasted.png", width: 75%),
     caption: [High Contrast Monte Carlo Output with Optimal Point Selected.],
 )  <monte-carlo-100k-search-contrasted>
 
@@ -304,9 +304,11 @@ Taking a sample in the center of the largest optimal region produced a point wit
 After selecting optimal values for hidden layer nodes and learning rate, the network was trained with a variety of test iterations to indentify the optimal number of training cycles. The results of this are shown below in @training-iterations-graph.
 
 #figure(
-    image("resources/parameters_search_100k.png", width: 110%),
+    image("resources/training_iterations_search_25_0.png", width: 110%),
     caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
 )  <training-iterations-graph>
+
+The network reached a high level of performance after two training iterations, *achieving around 96% accuracy*. Beyond this, the performance fluctuated slightly before gradually decreasing (possibly due to overfitting of the data).
 
 === Full Training and Testing
 
@@ -327,7 +329,7 @@ A similar approach was taken to identify optimal hyperparameters for this datase
 
 
 #figure(
-    image("resources/fashion_parameters_search_25k-selected.png", width: 90%),
+    image("resources/fashion_parameters_search_25k-selected.png", width: 75%),
     caption: [High Contrast Monte Carlo Output with Optimal Point Selected (Fashion MNIST).],
 )  <training-fashion-iterations-spotted>
 
@@ -339,6 +341,10 @@ Learning Rate = 400/423 = 0/94. 1-0.94 = 0.06. 0.06*0.5 = 0.03.
 
 
 
+#figure(
+    image("resources/fashion_training_iterations_search_25_0.png", width: 110%),
+    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
+)  <training-fashion-iterations-graph>
 
 === Training Iteration Search
 As before, a search for the optimal number of training iterations was performed, with the results shown below:
