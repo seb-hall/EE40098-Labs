@@ -52,7 +52,7 @@
 // MARK: EX 1
 = Exercise 1 - Logical Operators
 
-Truth tables, state space graphs and neural network weights and biases for the AND, NAND, OR and XOR logical operators are shown below. In the graphs, red indicates value of 0 and blue indicates value of 1.
+Perceptrons@perceptron can be used to perform logical operations on binary and discrete data inputs. Truth tables, state space graphs, and neural network weights and biases for the AND, NAND, OR and XOR logical operators are shown below. In the graphs, red indicates a value of 0 and blue indicates a value of 1.
 
 == AND Operator
 
@@ -260,14 +260,14 @@ inset: (left: -5%, right: 0%),
 
 #figure(
     image("resources/xor_network_diagram.png", width: 100%),
-    caption: [XOR network diagram, consisting of a hidden layer with AND and OR weights, followed by an output layer, with weights (w#sub[1] = 1, w#sub[2] = 1) and bias (b = -0.5).],
+    caption: [XOR network diagram, consisting of a hidden layer with AND and OR weights, followed by an output layer, with weights (w#sub[1] = -1, w#sub[2] = 1) and bias (b = -0.5).],
 )  <xor-network-diagram>
 
 
 // MARK: EX 2
 = Exercise 2 - Implementation of a Neural Network for MNIST
 
-A perceptron-based neural network can be implemented to classify images into discrete categories. For this exercise, a network was implemented to classify MNIST datasets; the first a set of handwritten numeric digits, and the second a collection of items of clothing.
+A perceptron-based neural network can be implemented to classify images into discrete categories. For this exercise, a network was implemented to classify MNIST@mnist datasets; the first a set of handwritten numeric digits, and the second a collection of items of clothing.
 
 == Neural Network 1 - Numeric Dataset
 
@@ -278,49 +278,45 @@ A perceptron-based neural network can be implemented to classify images into dis
     caption: [Artificial Neural Network (ANN) Structure for Classifying MNIST Digits.],
 )  <ann-diagram>
 
-An ANN was implemented as shown in @ann-diagram, consisting of an input layer with 784 input nodes corresponding to the 28x28 grayscale pixels in each image, a hidden layer with a variable number of nodes, and an output layer with 10 nodes corresponding to the 10 output digit classes (0-9).
+An artificial neural network (ANN) was implemented as shown in @ann-diagram, consisting of an input layer with 784 input nodes corresponding to the 28x28 grayscale pixels in each image, a hidden layer with a variable number of nodes, and an output layer with 10 nodes corresponding to the 10 output digit classes (0-9).
 
 === Hyperparameter Search
 
-In order to optimise the performance of the network, two parameters were explored in detail - the learning rate and number of hidden nodes.
-This was achieved with a Monte Carlo search method, which involves defining a parameter space, and evaluating random combinations of parameters within this space to identify an optimal region of combinations (see @monte-carlo-100k-search).
+To optimise the performance of the network, two parameters were explored in detail - the learning rate and number of hidden nodes.
+This was achieved with a Monte Carlo search method@monte-carlo, which involves defining a parameter space, and evaluating random combinations of parameters within this space to produce an optimal region (see @monte-carlo-100k-search).
 
 #figure(
     image("resources/parameters_search_100k.png", width: 110%),
     caption: [Monte Carlo Search for Hyperparameters of Hidden Nodes and Learning Rate.],
 )  <monte-carlo-100k-search>
 
-For the MNIST digit dataset, a search was performed on the reduced train and test datasets for 100,000 iterations, with learning rates between 0.01 and 1.0, and hidden layers between  and 1000. This was a wide search space, so a large number of samples were required to find optimal parameters. The output of this search was represented as a scatter plot, displaying the test performance of each sample as a colour gradient, from 0-90%. This image was then edited to increase contrast and find a clearer optimal region, shown in @monte-carlo-100k-search-contrasted.
+A search was performed on reduced train and test datasets for increased speed. 100,000 iterations were taken with learning rates between 0.01 and 1.0, and hidden layers between 1 and 1000. This was a wide search space, so a large number of samples were required to find optimal parameters. The output of this search was represented as a scatter plot, displaying the test performance of each sample as a colour gradient, from 0-90%. This image was then edited to increase contrast and find a clearer optimal region, shown in @monte-carlo-100k-search-contrasted.
 
 #figure(
     image("resources/parameters_search_100k-contrasted.png", width: 75%),
-    caption: [High Contrast Monte Carlo Output with Optimal Point Selected.],
+    caption: [High Contrast Monte Carlo Output with \ Optimal Point Selected.],
 )  <monte-carlo-100k-search-contrasted>
 
-Taking a sample in the center of the largest optimal region produced a point with 254 hidden nodes and a learning rate of 0.11.
+Taking a sample in the center of the largest optimal region produced a point with *254 hidden nodes* and a *learning rate of 0.11*.
 
-=== Training Iteration Search
+=== Full Dataset Performance
 
-After selecting optimal values for hidden layer nodes and learning rate, the network was trained with a variety of test iterations to indentify the optimal number of training cycles. The results of this are shown below in @training-iterations-graph.
+After selecting optimal values for hidden layer nodes and learning rate, the network was trained over a number of iterations on the full dataset. The results for this are shown below in @training-iterations-graph.
 
 #figure(
     image("resources/training_iterations_search_25_0.png", width: 110%),
     caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
 )  <training-iterations-graph>
 
-The network reached a high level of performance after two training iterations, *achieving around 96% accuracy*. Beyond this, the performance fluctuated slightly before gradually decreasing (possibly due to overfitting of the data).
-
-=== Full Training and Testing
-
-After identifying optimal hyperparameters, the network was trained and tested on the full MNIST dataset. The results for this are shown below:
+The network reached a high level of performance after three training iterations, achieving *97.4% accuracy*. Beyond this, the performance fluctuated slightly before gradually decreasing (possibly due to overfitting of the data).
 
 == Neural Network 2 - Fashion Dataset
 
-The second dataset used was the Fashion MNIST dataset, which consists of 28x28 grayscale images of clothing items instead of numeric digits.
+The second dataset used was the Fashion MNIST dataset, which consists of 28x28 grayscale images of clothing items instead of numeric digits. A structure identical to that shown in @ann-diagram was used, due to the images being the same size, and the number of distinct classes also being 10.
 
 === Hyperparameter Search
 
-A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each iteration of the Monte Carlo search would take longer to complete. Therefore, a new search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below: 
+A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each training iteration took significantly longer to complete. Therefore, a new Monte Carlo search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below: 
 
 #figure(
     image("resources/fashion_parameters_search_25k.png", width: 110%),
@@ -333,27 +329,30 @@ A similar approach was taken to identify optimal hyperparameters for this datase
     caption: [High Contrast Monte Carlo Output with Optimal Point Selected (Fashion MNIST).],
 )  <training-fashion-iterations-spotted>
 
-Hidden nodes: 214/506 = 0.42. 0.42*400 = 168. 168 + 300 = 468.
-Learning Rate: 290/421 = 0.69. 1 - 0.69 = 0.31. 0.31*0.1 = 0.031.
+As with the previous dataset, the output image was edited for increased contrast to determine an optimal region, shown in @training-fashion-iterations-spotted. A sample in the center of the optimal region was selected to give a resulting count of *420 hidden nodes* and a *learning rate of 0.03*.
 
-Hidden nodes: 430/509 = 0.84. 0.84*500 = 420.
-Learning Rate = 400/423 = 0/94. 1-0.94 = 0.06. 0.06*0.5 = 0.03.
+=== Full Dataset Performance
 
-
+As before, the hyperparameters identified with the Monte Carlo search were then applied to training of the full dataset over a number of iterations (@training-fashion-iterations-graph).
 
 #figure(
     image("resources/fashion_training_iterations_search_25_0.png", width: 110%),
-    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
+    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters (Fashion MNIST).],
 )  <training-fashion-iterations-graph>
 
-=== Training Iteration Search
-As before, a search for the optimal number of training iterations was performed, with the results shown below:
+The performance took longer to stabilise than previously, eventually reaching a peak of *87.5% accuracy* after 9 training iterations.
 
+=== Comparison to Digit Dataset
 
-=== Full Training and Testing
+The final performance of the fashion network was significantly lower than that of the digit network, with error rates of 12.5% and 2.6% respectively, an increase of approximately 5x. 
+
+An additional observation is that the fashion network performed best with a higher number of hidden nodes and a lower learning rate compared to the digit network. 
+This may be indicative of a dataset with more complex features, requiring more nodes to represent them.
 
 // MARK: CONCLUSION
-= Conclusion
+== Possible Improvements
+
+A wide range of network architectures could be explored to provide higher performance, such as different activation functions or multiple hidden layers. Convolutional Neural Networks (CNNs) are also frequently used for image classification tasks, and have additional features such as pooling and convolutional layers. These are especially effective at extracting complex features, and would likely be the most beneficial for the fashion dataset which struggled with a simpler ANN architecture.
 
 // MARK: REFERENCES
 = References
@@ -363,4 +362,3 @@ As before, a search for the optimal number of training iterations was performed,
     title: none,
     style: "ieee"
 )
-

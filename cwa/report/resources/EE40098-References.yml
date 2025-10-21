@@ -1,0 +1,18 @@
+perceptron:
+    type: Article
+    title: "The Perceptron: A Model for Brain Functioning"
+    date: 1962
+    author: H.D Block
+
+mnist:
+    type: Web
+    title: MNIST
+    date: 2025
+    url: http://yann.lecun.com/exdb/mnist/
+
+monte-carlo:
+    type: Book
+    title: Monte Carlo Methods
+    date: 1964
+    author: J. M. Hammersley and D. C. Handscomb
+
