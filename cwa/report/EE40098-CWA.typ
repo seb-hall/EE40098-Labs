@@ -318,12 +318,26 @@ The second dataset used was the Fashion MNIST dataset, which consists of 28x28 g
 
 === Hyperparameter Search
 
-A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each iteration of the Monte Carlo search would take longer to complete. Therefore, a new search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below:
+A similar approach was taken to identify optimal hyperparameters for this dataset, however the reduced size training dataset was significantly larger than before (1000 vs 100 samples), so each iteration of the Monte Carlo search would take longer to complete. Therefore, a new search was performed with 25,000 iterations and a smaller parameter space; learning rates between 0.01 and 0.5, and hidden layers between 1 and 500. The results from this are shown below: 
 
 #figure(
-    image("resources/fashion_parameters_search_2k-selected.png", width: 100%),
-    caption: [Test Performance vs Training Iterations for Optimal Hyperparameters.],
-)  <training->
+    image("resources/fashion_parameters_search_25k.png", width: 110%),
+    caption: [Monte Carlo Search for Hyperparameters of Hidden Nodes and Learning Rate (Fashion MNIST).],
+)  <training-fashion-iterations>
+
+
+#figure(
+    image("resources/fashion_parameters_search_25k-selected.png", width: 90%),
+    caption: [High Contrast Monte Carlo Output with Optimal Point Selected (Fashion MNIST).],
+)  <training-fashion-iterations-spotted>
+
+Hidden nodes: 214/506 = 0.42. 0.42*400 = 168. 168 + 300 = 468.
+Learning Rate: 290/421 = 0.69. 1 - 0.69 = 0.31. 0.31*0.1 = 0.031.
+
+Hidden nodes: 430/509 = 0.84. 0.84*500 = 420.
+Learning Rate = 400/423 = 0/94. 1-0.94 = 0.06. 0.06*0.5 = 0.03.
+
+
 
 
 === Training Iteration Search
