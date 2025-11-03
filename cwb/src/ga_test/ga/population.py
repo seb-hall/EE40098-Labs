@@ -5,10 +5,11 @@ from .individual import Individual
 
 class Population:
     
-    def __init__(self, size, min, max, target):
-        self.individuals = [Individual(min, max) for _ in range(size)]
+    def __init__(self, size, gene_count, min, max, target):
+        self.individuals = [Individual(gene_count, min, max) for _ in range(size)]
 
         self.target = target
+        self.gene_count = gene_count
         self.min = min
         self.max = max
 
@@ -21,17 +22,15 @@ class Population:
 
     def evaluate_fitness(self):
         
-        min_error = self.target
-
+        summed = 0
         for i in range(len(self.individuals)):
-            min_error = min(min_error, self.individuals[i].evaluate_fitness(self.target))
+            summed += self.individuals[i].evaluate_fitness(self.target)
 
-        return min_error
+        return summed / (len(self.individuals) * 1.0)
 
     def evolve(self):
         evaluated_individuals = [(individual.evaluate_fitness(self.target), individual) for individual in self.individuals]
         evaluated_individuals = [x[1] for x in sorted(evaluated_individuals, key=lambda x: x[0])]
-
         retain_length = int(len(evaluated_individuals) * self.retain)
         parents = evaluated_individuals[:retain_length]
 
@@ -43,7 +42,9 @@ class Population:
         # mutate some individuals
         for individual in parents:
             if self.mutate > random():
-                individual.gene = randint(self.min, self.max)
+                pos_to_mutate = randint(0, len(individual.genes) - 1)
+                # this mutation is not ideal, because it restricts the range of possible values
+                individual.genes[pos_to_mutate] = randint(min(individual.genes), max(individual.genes))
 
         # crossover parents to create children
         parents_length = len(parents)
@@ -55,9 +56,10 @@ class Population:
             if male != female:
                 male = parents[male]
                 female = parents[female]
+                half = len(male.genes) // 2
 
-                child = Individual(self.min, self.max)
-                child.gene = (male.gene + female.gene) // 2
+                child = Individual(self.gene_count, self.min, self.max)
+                child.genes = male.genes[:half] + female.genes[half:]
                 children.append(child)
         parents.extend(children)
 
