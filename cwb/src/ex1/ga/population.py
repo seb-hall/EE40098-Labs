@@ -1,41 +1,90 @@
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  population.py
+## Exercise     :  1
+## Author       :  samh25
+## Created      :  2025-11-14 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing an population in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
 from random import randint, random
 import matplotlib.pyplot as plt
 
 from .individual import Individual
 
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
 class Population:
+
+    ############################################################
+    ## STATIC VARIABLES
+
+    # example starting parameters
+    retain = 0.2
+    random_select = 0.05
+    mutate = 0.01
+
+    ############################################################
+    ## STATIC METHODS
+
+    # set parameters for all populations
+    def set_parameters(retain, random_select, mutate):
+        Population.retain = retain
+        Population.random_select = random_select
+        Population.mutate = mutate
+
+    ############################################################
+    ## CONSTRUCTOR
     
-    def __init__(self, size, min, max, target):
-        self.individuals = [Individual(min, max) for _ in range(size)]
+    # instantiate a new population
+    def __init__(self, size):
 
-        self.target = target
-        self.min = min
-        self.max = max
+        # create a list of individuals
+        self.individuals = [Individual() for _ in range(size)]
 
-        self.retain = 0.2
-        self.random_select = 0.05
-        self.mutate = 0.01
-
+        # initialize fitness history
         self.fitness_history = [self.evaluate_fitness()]
- 
+    
+    ############################################################
+    ## INSTANCE METHODS
 
+    # evaluate the fitness of this population
     def evaluate_fitness(self):
         
-        min_error = self.target
+        # find the worst possible fitness value
+        min_error = Individual.get_worst_fitness()
 
+        # find the best fitness in the population
         for i in range(len(self.individuals)):
-            min_error = min(min_error, self.individuals[i].evaluate_fitness(self.target))
+            min_error = min(min_error, self.individuals[i].evaluate_fitness())
+
+        print("Best fitness:", min_error)
 
         return min_error
 
+    # evolve this population to the next generation
     def evolve(self):
-        evaluated_individuals = [(individual.evaluate_fitness(self.target), individual) for individual in self.individuals]
+
+        # evaluate fitness of all individuals and sort them
+        evaluated_individuals = [(individual.evaluate_fitness(), individual) for individual in self.individuals]
         evaluated_individuals = [x[1] for x in sorted(evaluated_individuals, key=lambda x: x[0])]
 
+        # select the best individuals to be parents
         retain_length = int(len(evaluated_individuals) * self.retain)
         parents = evaluated_individuals[:retain_length]
 
-        # randomly add other individuals to promote genetic diversity
+        # randomly individuals outside of the best to promote genetic diversity
         for individual in evaluated_individuals[retain_length:]:
             if self.random_select > random():
                 parents.append(individual)
@@ -43,12 +92,15 @@ class Population:
         # mutate some individuals
         for individual in parents:
             if self.mutate > random():
-                individual.gene = randint(self.min, self.max)
+                individual.mutate()
 
-        # crossover parents to create children
+        # identify number of children to create
         parents_length = len(parents)
         desired_length = len(self.individuals) - parents_length
+
+        # create children until we have a full population again
         children = []
+
         while len(children) < desired_length:
             male = randint(0, parents_length - 1)
             female = randint(0, parents_length - 1)
@@ -56,18 +108,22 @@ class Population:
                 male = parents[male]
                 female = parents[female]
 
-                child = Individual(self.min, self.max)
-                child.gene = (male.gene + female.gene) // 2
+                child = Individual.crossover(male, female)
                 children.append(child)
-        parents.extend(children)
 
+        # create the new generation
+        parents.extend(children)
         self.individuals = parents
-        
+
+        # evaluate fitness and record history
         self.fitness_history.append(self.evaluate_fitness())
         
+    # plot the fitness history with matplotlib
     def plot_fitness_history(self):
         plt.plot(self.fitness_history)
         plt.show()
+
+
 
 
 

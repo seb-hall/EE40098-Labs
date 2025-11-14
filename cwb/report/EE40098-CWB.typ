@@ -78,10 +78,11 @@ _Implementation a stop condition for the algorithm created in exercise 1._
 
 // MARK: EX 4
 = Exercise 4
-_Optimising a _
+_Using a genetic algorithm to optimise parameters for a 5th order polynomial._
 
 // MARK: EX 5
 = Exercise 5
+_Explaining Holland's Schema Theorem based on exercise 1 using a genetic algorithm with binary encoding._
 
 // MARK: REFERENCES
 = References
