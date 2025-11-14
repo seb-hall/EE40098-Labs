@@ -60,7 +60,7 @@
 // MARK: INTRO
 = Introduction
 
-Genetic algorithms (GAs) are a type of iterative algorithm based on biological evolution. 
+Genetic algorithms (GAs) are a type of iterative algorithm based on biological evolution. They are used to find approximate solutions to optimisation and search problems by mimicking processes such as natural selection and genetic mutation to simulate a 'survival of the fittest' scenario over multiple generations. 
 
 // MARK: EX 1
 = Exercise 1
@@ -78,38 +78,54 @@ Three genetic processes were implemented:
 An example plot showing the evolution of fitness over 10 generations with a population size of 10 is shown in Figure <ex1-fitness>.
 
 #figure(
-    image("resources/ex1_fitness.png", width: 120%),
+    image("resources/ex1_fitness.png", width: 110%),
     caption: [Example evolution over 10 generations with a population size of 10.],
 )  <ex1-fitness>
 
 The source code for this exercise can be found in @ex1-source-code.
 
+\
+
 // MARK: EX 2
 = Exercise 2
 _Analysis of the genetic algorithm created in exercise 1._
 
+The classes representing individuals and populations in exercise 1 were reused to perform a sensitivity analysis on several parameters of the genetic algorithm. The parameters analysed were:
+
+1. *Population Size* - the number of individuals in the population.
+2. *Mutation Proportion* - the proportion of surviving individuals that undergo mutation each generation.
+3. *Mutation Limit* - the maximum amount by which an individual's gene can be mutated.
+4. *Retain Proportion* - the proportion of the best individuals that are retained each generation.
+5. *Crossover Variance* - the variance of blending genes from two parents when creating a child.
+
+== Population Size Analysis
+
+The 
+
 #figure(
-    image("resources/ex2-population.png", width: 120%),
+    image("resources/ex2-population.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-population>
 
+
+
 #figure(
-    image("resources/ex2-mutation.png", width: 120%),
+    image("resources/ex2-mutation.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-mutation-proportion>
 
 #figure(
-    image("resources/ex2-mutation-limit-2.png", width: 120%),
+    image("resources/ex2-mutation-limit-2.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-mutation-limit>
 
 #figure(
-    image("resources/ex2-retain.png", width: 120%),
+    image("resources/ex2-retain.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-retain>
 
 #figure(
-    image("resources/ex2-crossover-variance-2.png", width: 120%),
+    image("resources/ex2-crossover-variance-2.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-crossover-variance>
 
