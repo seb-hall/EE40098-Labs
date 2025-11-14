@@ -34,9 +34,10 @@ def main():
     random_select = 0.05
     mutate = 0.3
     mutation_limit = 10
+    crossover_variance = 1
 
     # configure individual and population parameters
-    Individual.set_parameters(min = individual_min, max = individual_max, target = target, mutation_limit = mutation_limit)
+    Individual.set_parameters(min = individual_min, max = individual_max, target = target, mutation_limit = mutation_limit, crossover_variance=crossover_variance)
     Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
 
     # create initial population
