@@ -116,11 +116,25 @@ class Population:
         self.individuals = parents
 
         # evaluate fitness and record history
-        self.fitness_history.append(self.evaluate_fitness())
+        fitness = self.evaluate_fitness()
+        self.fitness_history.append(fitness)
+    
+    # get the current best fitness in the population
+    def get_fitness(self):
+        if self.fitness_history.__len__() > 0:
+            return self.fitness_history[-1]
+        else:
+            return Individual.get_worst_fitness()
         
     # plot the fitness history with matplotlib
     def plot_fitness_history(self):
+        plt.figure(figsize=(6, 4))
         plt.plot(self.fitness_history)
+        plt.title("Population Fitness Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Best Fitness")
+        plt.xlim(0, self.fitness_history.__len__() - 1)
+        plt.grid(True)
         plt.show()
 
 
