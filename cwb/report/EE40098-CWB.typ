@@ -153,11 +153,18 @@ The final parameter analysed was the crossover variance, referring to the varian
 
 This showed minimal effect on convergence, suggesting that gene blending plays a lesser role in the algorithm's performance.
 
-
-
 // MARK: EX 3
 = Exercise 3
 _Implementation a stop condition for the algorithm created in exercise 1._
+
+Stopping the algorithm early when a satisfactory solution is found can save computation time and resouces. This can be achieved quite simply by comparing the best fitness in the population to a defined threshold after each generation. If the best fitness is below this threshold, the algorithm can terminate early. A study was performed to analyse the effect of different thresholds on convergence time, within the range of 0 to 0.5. The results are shown in @ex3-stoptime and the source code can be found in @ex3-source-code.
+
+#figure(
+    image("resources/ex3-stoptime.png", width: 110%),
+    caption: [Performance comparison of different stop thresholds over 10,000 samples.],
+)  <ex3-stoptime>
+
+This plot shows a clear inverse relationship between stop threshold and convergence time. Lower thresholds require the algorithm to find a more accurate solution, taking longer to converge. Higher thresholds are more permissive, allowing the algorithm to terminate earlier.
 
 // MARK: EX 4
 = Exercise 4
@@ -739,6 +746,101 @@ def main():
     plt.grid()
     plt.show()
         
+
+# assign main function to entry point
+if __name__ == '__main__':
+    main()
+```
+
+== Exercise 3: Source Code <ex3-source-code>
+=== main.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  main.py
+## Exercise     :  3
+## Author       :  samh25
+## Created      :  2025-11-17 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  Main program for exercise 3.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from ga import Population, Individual
+import random
+import matplotlib.pyplot as plt
+
+################################################################
+## MARK: FUNCTIONS
+################################################################
+
+# main program entry point
+def main():
+    
+    # set parameters
+    target = 50
+    population_size = 10
+    individual_min = 0
+    individual_max = 100
+    generations = 200
+    retain = 0.2
+    random_select = 0.05
+    mutate = 0.3
+    mutation_limit = 10
+    crossover_variance = 1
+
+    stop_conditions_count = 10000
+
+    # configure individual and population parameters
+    Individual.set_parameters(min = individual_min, max = individual_max, target = target, mutation_limit = mutation_limit, crossover_variance=crossover_variance)
+    Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+    
+    min_stop_condition = 0
+    max_stop_condition = 0.5
+    stop_conditions = [random.uniform(min_stop_condition, max_stop_condition) for _ in range(stop_conditions_count)]
+    stop_conditions_performance = []
+
+    for i in range(len(stop_conditions)):
+
+        print("Testing stop limit:", i)
+        stop_condition = stop_conditions[i]
+
+        # create initial population
+        population = Population(population_size)
+        seen_best = False
+
+        # evolve population over a number of generations
+        for i in range(generations):
+            population.evolve()
+
+            best_fitness = population.evaluate_fitness()
+
+            if best_fitness < stop_condition:
+                stop_conditions_performance.append(i)
+                seen_best = True
+                break
+
+        if not seen_best:   
+            stop_conditions_performance.append(generations)
+        
+    
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(stop_conditions, stop_conditions_performance, s=5)
+    plt.title('Stop Threshold vs Generations to Converge')
+    plt.xlabel('Stop Threshold')
+    plt.xlim(min_stop_condition, max_stop_condition)
+    plt.ylim(0, generations)
+    plt.ylabel('Generations to Converge')
+    plt.grid()
+    plt.show()
+    
 
 # assign main function to entry point
 if __name__ == '__main__':
