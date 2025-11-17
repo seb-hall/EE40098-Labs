@@ -1,5 +1,3 @@
-#import "@preview/plotst:0.2.0": *
-
 #import "resources/EE40098-References.yml"
 
 #set page(
@@ -78,7 +76,7 @@ Three genetic processes were implemented:
 An example plot showing the evolution of fitness over 10 generations with a population size of 10 is shown in Figure <ex1-fitness>.
 
 #figure(
-    image("resources/ex1_fitness.png", width: 110%),
+    image("resources/ex1-fitness.png", width: 110%),
     caption: [Example evolution over 10 generations with a population size of 10.],
 )  <ex1-fitness>
 
@@ -98,36 +96,62 @@ The classes representing individuals and populations in exercise 1 were reused t
 4. *Retain Proportion* - the proportion of the best individuals that are retained each generation.
 5. *Crossover Variance* - the variance of blending genes from two parents when creating a child.
 
+Each parameter was varied randomly over a range of values, with 10,000 samples taken for each. The modified Python script can be found in @ex2-source-code.
+
 == Population Size Analysis
 
-The 
+Population size was the first parameter analysed. This varies the number of 'individuals' in the population, effectively changing the genetic diversity available to the algorithm. The results are shown in @ex2-population.
 
 #figure(
     image("resources/ex2-population.png", width: 110%),
     caption: [Performance comparison of different population sizes over 10,000 samples.],
 )  <ex2-population>
 
+This shows a clear trend that larger populations lead to a faster convergence to the target value, as more genetic diversity allows the algorithm to explore a wider solution space.
 
+== Mutation Probability Analysis
+
+The next parameter analysed was the mutation probability, corresponding to the proportion of individuals that undergo mutation each generation. The results are shown in @ex2-mutation-proportion.
 
 #figure(
     image("resources/ex2-mutation.png", width: 110%),
-    caption: [Performance comparison of different population sizes over 10,000 samples.],
+    caption: [Performance comparison of different mutation proportions over 10,000 samples.],
 )  <ex2-mutation-proportion>
+
+This shows a less clear trend, but suggests that high mutation rates hinder convergence, while low rates have little effect (in isolation).
+
+== Mutation Limit Analysis
+
+The next parameter to be analysed was the mutation limit, referring to the range of values by which an individual's gene can be mutated. The results are shown in @ex2-mutation-limit.
 
 #figure(
     image("resources/ex2-mutation-limit-2.png", width: 110%),
-    caption: [Performance comparison of different population sizes over 10,000 samples.],
+    caption: [Performance comparison of different mutation limits over 10,000 samples.],
 )  <ex2-mutation-limit>
+
+The results suggest an inverse relationship, with lower mutation limits leading to faster convergence. This is likely because larger mutations move individuals further away from the optimal solution.
+
+== Retained Proportion Analysis
+
+After analysing the effects of mutation, the next parameter analysed was the 'retain' proportion, which determines the proportion of the best individuals that are retained each generation. The results are shown in @ex2-retain.
 
 #figure(
     image("resources/ex2-retain.png", width: 110%),
-    caption: [Performance comparison of different population sizes over 10,000 samples.],
+    caption: [Performance comparison of different retained proportions over 10,000 samples.],
 )  <ex2-retain>
+
+These results show a clear trend that lower retained proportions lead to faster convergence, likely due to the rejection of suboptimal individuals bringing the population closer to the target.
+
+== Crossover Variance Analysis
+
+The final parameter analysed was the crossover variance, referring to the variance of blending genes from two parents when creating a child. A lower variance ensures children have a close to 50:50 blend of their parents genes, while a higher variance could allow values closer to one parent. The results are shown in @ex2-crossover-variance.
 
 #figure(
     image("resources/ex2-crossover-variance-2.png", width: 110%),
-    caption: [Performance comparison of different population sizes over 10,000 samples.],
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
 )  <ex2-crossover-variance>
+
+This showed minimal effect on convergence, suggesting that gene blending plays a lesser role in the algorithm's performance.
 
 
 
