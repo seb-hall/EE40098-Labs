@@ -282,6 +282,25 @@ While most of these are close to their targets, some such as $c$ and $e$ are fur
 = Exercise 5
 _Explaining Holland's Schema Theorem based on exercise 1 using a genetic algorithm with binary encoding._
 
+Holland's Schema Theorem suggests that short, low-order schema with above-average fitness tend to increase exponentially in successive generations of a genetic algorithm. It can be expressed with the following equation:
+
+$ m(H,t+1) >= m(H,t) (overline(f)(H,t))/(overline(f)(t)) (1 - p_c delta(H)/(L - 1) - o(H)p_m ) $
+
+Where:
+
+- $m(H,t)$ is the number of instances of schema H at generation t
+- $overline(f)(H,t)$ is the average fitness of schema H at generation t
+- $overline(f)(t)$ is the average fitness of the population at generation t
+- $delta(H)$ is the defining length of schema H
+- $o(H)$ is the order of schema H
+- $L$ is the length of the individuals
+- $p_m$ is the mutation probability
+- $p_c$ is the crossover probability
+
+In other words, schemas that are short (low definintg length) and simple (low order) are less likely to be disrupted by crossover and mutation, allowing them to propagate through generations if they contribute positively to fitness.
+
+We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail.
+
 // MARK: REFERENCES
 = References
 
