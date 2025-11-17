@@ -3,9 +3,9 @@
 ## EE40098 Coursework B
 ##
 ## File         :  population.py
-## Exercise     :  1
+## Exercise     :  4
 ## Author       :  samh25
-## Created      :  2025-11-14 (YYYY-MM-DD)
+## Created      :  2025-11-17 (YYYY-MM-DD)
 ## License      :  MIT
 ## Description  :  A class representing an population in a 
 ##                 genetic algorithm.

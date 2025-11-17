@@ -231,15 +231,13 @@ def main():
     ############################################################
     ## FINAL PASS - BEST CONFIGURATION
 
-    population_size = 200
-    retain = 0.2
-    mutate = 0.15
-
     individual_min = -50
     individual_max = 50
     generations = 1000
     random_select = 0.05
     mutate = 0.15
+    population_size = 200
+    retain = 0.2
     mutation_limit = 2.5
     crossover_variance = 0.5
     
@@ -251,6 +249,7 @@ def main():
     # create initial population
     population = Population(population_size)
     fitness = 0
+    
     # evolve population over a number of generations
     for i in range(generations):
         

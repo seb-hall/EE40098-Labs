@@ -205,35 +205,78 @@ The genetic algorithm parameters were tuned to improve performance for this spec
 3. *Mutation Proportion*
 4. *Mutation Limit*
 
-Each one of these was varied within a range, and the error after 100 generations was recorded as a measure of performance. 
+Each one of these was varied within a range, and the error after 10 generations was recorded as a measure of performance (10 being chosen for speed).  
 
 #figure(
     image("resources/ex4-population-2.png", width: 110%),
-    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+    caption: [Performance comparison of different population size values.],
 )  <ex4-population>
 
+Population size (@ex4-population) a trend of larger populations leading to lower error, likely due to increased genetic diversity.
 
+However, the other parameters (@ex4-retain, @ex4-mutate and @ex4-mutate-limit) showed less clear trends.
 
 #figure(
     image("resources/ex4-retain.png", width: 110%),
-    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+    caption: [Performance comparison of different retain proportion values.],
 )  <ex4-retain>
 
 
 #figure(
     image("resources/ex4-mutate.png", width: 110%),
-    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+    caption: [Performance comparison of different mutation proportion values.],
 )  <ex4-mutate>
 
 #figure(
     image("resources/ex4-mutate-limit.png", width: 110%),
-    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+    caption: [Performance comparison of different mutate limit values.],
 )  <ex4-mutate-limit>
+
+\
+
+== Final Results
+
+After tuning the parameters, via direct analysis and strategic testing, the final configuration was found to be:
+
+- Population Size: 200
+- Retain Proportion: 0.2
+- Mutation Proportion: 0.15
+- Mutation Limit: 2.5
+
+This resulted in a genetic algorithm that converged in approximately 250 generations to a mean squared error over the dataset of less than 1.0. The performance of the resultant configuration is shown in @ex4-overall, using a logarithmic scale for clarity and to show the rapid initial convergence.
 
 #figure(
     image("resources/ex4-overall-2.png", width: 110%),
-    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+    caption: [Plot of a single run of the resultant genetic algorithm.],
 )  <ex4-overall>
+
+The final co-efficients found by the genetic algorithm were as follows:
+
+#figure(
+    caption: "Final genetic algorithm co-efficients",
+    block(width: 100%, inset: (top: 0%, bottom: 0%),
+        align(center, //Align starts here
+            table(
+                columns: (auto, auto, auto),
+                inset: 7.5pt,
+                align: horizon + center,
+                table.header(
+                    [*Co-efficient*], [*Target*], [*GA-Identified*],
+                ),
+                [a], [25], [25.620],
+                [b], [18], [17.816],
+                [c], [31], [27.820],
+                [d], [-14], [-13.400],
+                [e], [7], [10.6427],
+                [f], [-19], [-19.334],
+            )
+        )
+    )
+) <ga-coefficients>
+
+While most of these are close to their targets, some such as $c$ and $e$ are further off. The result is likely restricted by the size of test data. A larger set would likely result in a more accurate output, but would have taken significantly longer to compute.
+
+\ 
 
 // MARK: EX 5
 = Exercise 5
@@ -249,8 +292,8 @@ _Explaining Holland's Schema Theorem based on exercise 1 using a genetic algorit
 )
 
 #pagebreak()
-= Appendices
 #set page(columns: 1)
+= Appendices
 
 == Exercise 1: Source Code <ex1-source-code>
 === individual.py
@@ -913,3 +956,532 @@ if __name__ == '__main__':
 ```
 
 == Exercise 4: Source Code <ex4-source-code>
+
+=== individual.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  individual.py
+## Exercise     :  4
+## Author       :  samh25
+## Created      :  2025-11-17 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing an individual in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from random import uniform, random
+
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
+class Individual:   
+
+    ############################################################
+    ## STATIC VARIABLES
+
+    genes_count = 6
+
+    # example starting parameters
+    min = 0 
+    max = 100
+    mutation_limit = 5
+    target_data = []
+    crossover_variance = 1
+
+    ############################################################
+    ## STATIC METHODS
+
+    # set parameters for all individuals
+    def set_parameters(min, max, target_data, mutation_limit, crossover_variance, genes_count):
+        Individual.min = min
+        Individual.max = max
+        Individual.target_data = target_data
+        Individual.mutation_limit = mutation_limit
+        Individual.crossover_variance = crossover_variance
+        Individual.genes_count = genes_count
+
+    # get the worst possible fitness value
+    def get_worst_fitness():
+        return float('inf')
+
+    # create a child individual from two parents
+    def crossover(male, female):
+
+        child = Individual()
+
+        for i in range(Individual.genes_count):
+
+            # use blend crossover
+            alpha = 0.5 - ((random() / 2) * Individual.crossover_variance)
+            child.genes[i] = (male.genes[i] * alpha) + (female.genes[i] * (1 - alpha))
+
+        return child
+    
+    ############################################################
+    ## CONSTRUCTOR
+    
+    # instantiate a new individual
+    def __init__(self):
+        self.genes = [uniform(Individual.min, Individual.max) for _ in range(Individual.genes_count)]
+
+    ############################################################
+    ## INSTANCE METHODS
+
+    # mutate this individual per-gene
+    def mutate(self, gene_index):
+
+        # use a small, limited range mutation
+        mutation = uniform(-Individual.mutation_limit, Individual.mutation_limit) * 1.0 # ensure float
+        self.genes[gene_index] = max(Individual.min, min(Individual.max, self.genes[gene_index] + mutation))
+
+    # evaluate the fitness of this individual, using absolute error over dataset
+    def evaluate_fitness(self):
+        
+        total_error = 0.0
+        a, b, c, d, e, f = self.genes
+
+        for x, y_target in Individual.target_data:
+            y_pred = (a*(x**5)) + (b*(x**4)) + (c*(x**3)) + (d*(x**2)) + (e*x) + f
+            total_error += (y_pred - y_target) ** 2 # using squared error
+
+        mean_error = total_error / len(Individual.target_data)
+
+        return mean_error
+    
+
+```
+
+=== population.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  population.py
+## Exercise     :  4
+## Author       :  samh25
+## Created      :  2025-11-17 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing an population in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from random import randint, random, shuffle
+import matplotlib.pyplot as plt
+
+from .individual import Individual
+
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
+class Population:
+
+    ############################################################
+    ## STATIC VARIABLES
+
+    # example starting parameters
+    retain = 0.2
+    random_select = 0.05
+    mutate = 0.01
+
+    ############################################################
+    ## STATIC METHODS
+
+    # set parameters for all populations
+    def set_parameters(retain, random_select, mutate):
+        Population.retain = retain
+        Population.random_select = random_select
+        Population.mutate = mutate
+
+    ############################################################
+    ## CONSTRUCTOR
+    
+    # instantiate a new population
+    def __init__(self, size):
+
+        # create a list of individuals
+        self.individuals = [Individual() for _ in range(size)]
+
+        # initialize fitness history
+        self.fitness_history = [self.evaluate_fitness()]
+        self.best_individual = None
+    
+    ############################################################
+    ## INSTANCE METHODS
+
+    # evaluate the fitness of this population
+    def evaluate_fitness(self):
+        
+        # find the worst possible fitness value
+        min_error = Individual.get_worst_fitness()
+
+        # find the best fitness in the population
+        for i in range(len(self.individuals)):
+            min_error = min(min_error, self.individuals[i].evaluate_fitness())
+
+            # store the best individual
+            if min_error == self.individuals[i].evaluate_fitness():
+                self.best_individual = self.individuals[i]
+
+        return min_error
+
+    # evolve this population to the next generation
+    def evolve(self):
+
+        # evaluate fitness of all individuals and sort them
+        evaluated_individuals = [(individual.evaluate_fitness(), individual) for individual in self.individuals]
+        evaluated_individuals = [x[1] for x in sorted(evaluated_individuals, key=lambda x: x[0])]
+
+        # select the best individuals to be parents
+        retain_length = int(len(evaluated_individuals) * self.retain)
+        parents = evaluated_individuals[:retain_length]
+
+        # randomly individuals outside of the best to promote genetic diversity
+        for individual in evaluated_individuals[retain_length:]:
+            if self.random_select > random():
+                parents.append(individual)
+
+        # mutate some individuals
+        for individual in parents:
+            for gene_index in range(Individual.genes_count):
+                if self.mutate > random():
+                    individual.mutate(gene_index)
+
+        # identify number of children to create
+        parents_length = len(parents)
+        desired_length = len(self.individuals) - parents_length
+
+        # Shuffle parents and breed sequentially (no infinite loop ever)
+        shuffle(parents)
+        children = []
+
+        for i in range(desired_length):
+            # Cycle through parents if we run out
+            male = parents[i % parents_length]
+            female = parents[(i + 1) % parents_length]    # guaranteed different
+            child = Individual.crossover(male, female)
+            children.append(child)
+
+        # create the new generation
+        parents.extend(children)
+        self.individuals = parents
+
+        # evaluate fitness and record history
+        fitness = self.evaluate_fitness()
+        self.fitness_history.append(fitness)
+    
+    # get the current best fitness in the population
+    def get_fitness(self):
+        if self.fitness_history.__len__() > 0:
+            return self.fitness_history[-1]
+        else:
+            return Individual.get_worst_fitness()
+    
+    # get the current best individual in the population
+    def get_best_individual(self):
+        return self.best_individual
+        
+    # plot the fitness history with matplotlib
+    def plot_fitness_history(self):
+        plt.figure(figsize=(6, 4))
+        plt.plot(self.fitness_history)
+        plt.title("Population Fitness Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Best Fitness")
+        plt.yscale("log")
+        plt.xlim(0, self.fitness_history.__len__() - 1)
+        plt.grid(True)
+        plt.show()
+
+```
+
+=== main.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  main.py
+## Exercise     :  4
+## Author       :  samh25
+## Created      :  2025-11-17 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  Main program for exercise 4.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from ga import Population, Individual
+import random
+import matplotlib.pyplot as plt
+
+################################################################
+## MARK: FUNCTIONS
+################################################################
+
+# sample polynomial: 25x^5 + 18x^4 + 31x^3 - 14x^2 + 7x - 19
+def sample_poynomial(count, min_x, max_x):
+    
+    data = []
+
+    for _ in range(count):
+        
+        x = random.uniform(min_x, max_x)
+        y = 25*(x**5) + 18*(x**4) + 31*(x**3) - 14*(x**2) + 7*x - 19
+        
+        data.append((x, y))
+    
+    return data
+
+# main program entry point
+def main():
+    
+    # set parameters
+    target = 50
+    population_size = 100
+    individual_min = -50
+    individual_max = 50
+    generations = 1000
+    retain = 0.2
+    random_select = 0.05
+    mutate = 0.15
+    mutation_limit = 1.0
+    crossover_variance = 0.5
+
+    genes_count = 6
+
+    dataset = sample_poynomial(100, -2, 2)
+
+    search_generations = 10
+
+    population_sizes_count = 1
+    retain_proportions_count = 1
+    mutation_proportions_count = 1
+    mutation_limits_count = 1
+
+    ############################################################
+    ## FIRST PASS - POPULATION SIZE
+
+    # configure individual and population parameters
+    Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+    Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+
+    min_population_size = 10
+    max_population_size = 500
+    population_sizes = [random.randint(min_population_size, max_population_size) for _ in range(population_sizes_count)]
+
+    population_size_performance = []
+
+    for i in range(len(population_sizes)):
+        
+        print("Testing population size:", i)
+
+        population_size = population_sizes[i]
+
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            best_fitness = population.evaluate_fitness()
+        
+        population_size_performance.append(best_fitness)
+    
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(population_sizes, population_size_performance, s=5)
+    plt.title('Population Size vs Convergence Performance')
+    plt.xlabel('Population Size')
+    plt.xlim(min_population_size, max_population_size)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+    population_size = 100 # reset for next tests
+
+    ############################################################
+    ## SECOND PASS - RETAIN PROPORTION SIZE
+        
+    min_retain_proportion = 0.1
+    max_retain_proportion = 0.5
+    retain_proportions = [random.uniform(min_retain_proportion, max_retain_proportion) for _ in range(retain_proportions_count)]
+    retain_proportion_performance = []
+
+    for i in range(len(retain_proportions)):
+        
+        print("Testing retain proportion:", i)
+
+        retain = retain_proportions[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        retain_proportion_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(retain_proportions, retain_proportion_performance, s=5)
+    plt.title('Retain Proportion vs Convergence Performance')
+    plt.xlabel('Retain Proportion')
+    plt.xlim(min_retain_proportion, max_retain_proportion)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+    
+    ############################################################
+    ## THIRD PASS - MUTATION PROPORTION
+        
+    min_mutation_proportion = 0
+    max_mutation_proportion = 0.5
+    mutation_proportions = [random.uniform(min_mutation_proportion, max_mutation_proportion) for _ in range(mutation_proportions_count)]
+    mutation_proportion_performance = []
+
+    for i in range(len(mutation_proportions)):
+        
+        print("Testing mutate proportion:", i)
+
+        mutate = mutation_proportions[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        mutation_proportion_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(mutation_proportions, mutation_proportion_performance, s=5)
+    plt.title('Mutate Proportion vs Convergence Performance')
+    plt.xlabel('Mutate Proportion')
+    plt.xlim(min_mutation_proportion, max_mutation_proportion)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+
+    ############################################################
+    ## FOURTH PASS - MUTATION LIMIT
+        
+    min_mutation_limit = 0
+    max_mutation_limit = 50
+    mutation_limits = [random.uniform(min_mutation_limit, max_mutation_limit) for _ in range(mutation_limits_count)]
+    mutation_limit_performance = []
+
+    for i in range(len(mutation_limits)):
+        
+        print("Testing mutate limit:", i)
+
+        mutation_limit = mutation_limits[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        mutation_limit_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(mutation_limits, mutation_limit_performance, s=5)
+    plt.title('Mutate Limit vs Convergence Performance')
+    plt.xlabel('Mutate Limit')
+    plt.xlim(min_mutation_limit, max_mutation_limit)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+    ############################################################
+    ## FINAL PASS - BEST CONFIGURATION
+
+    individual_min = -50
+    individual_max = 50
+    generations = 1000
+    random_select = 0.05
+    mutate = 0.15
+    population_size = 200
+    retain = 0.2
+    mutation_limit = 2.5
+    crossover_variance = 0.5
+    
+    dataset = sample_poynomial(100, -2, 2)
+
+    Individual.set_parameters(min = individual_min, max =  individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+    Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+
+    # create initial population
+    population = Population(population_size)
+    fitness = 0
+    
+    # evolve population over a number of generations
+    for i in range(generations):
+        
+        population.evolve()
+        fitness = population.evaluate_fitness()
+        print("Generation:", i, "Best Fitness:", fitness)
+
+        if (fitness < 1):
+
+            best_individual = population.get_best_individual()
+            print(" Best Individual Genes:", best_individual.genes)
+            break
+
+    population.plot_fitness_history()
+        
+    
+
+# assign main function to entry point
+if __name__ == '__main__':
+    main()
+```
