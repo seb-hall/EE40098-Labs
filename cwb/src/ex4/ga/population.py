@@ -139,6 +139,7 @@ class Population:
         plt.title("Population Fitness Over Generations")
         plt.xlabel("Generation")
         plt.ylabel("Best Fitness")
+        plt.yscale("log")
         plt.xlim(0, self.fitness_history.__len__() - 1)
         plt.grid(True)
         plt.show()

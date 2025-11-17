@@ -215,15 +215,25 @@ Each one of these was varied within a range, and the error after 100 generations
 
 
 #figure(
-    image("resources/ex4-population-2.png", width: 110%),
+    image("resources/ex4-retain.png", width: 110%),
     caption: [Performance comparison of different crossover variances over 10,000 samples.],
-)  <ex4-population>
+)  <ex4-retain>
 
 
 #figure(
     image("resources/ex4-mutate.png", width: 110%),
     caption: [Performance comparison of different crossover variances over 10,000 samples.],
 )  <ex4-mutate>
+
+#figure(
+    image("resources/ex4-mutate-limit.png", width: 110%),
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+)  <ex4-mutate-limit>
+
+#figure(
+    image("resources/ex4-overall-2.png", width: 110%),
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+)  <ex4-overall>
 
 // MARK: EX 5
 = Exercise 5

@@ -61,7 +61,7 @@ def main():
     population_sizes_count = 1
     retain_proportions_count = 1
     mutation_proportions_count = 1
-    mutation_limits_count = 1000
+    mutation_limits_count = 1
 
     ############################################################
     ## FIRST PASS - POPULATION SIZE
@@ -106,8 +106,7 @@ def main():
     plt.grid()
     plt.show()
 
-    #population = 350
-    population_size = 100
+    population_size = 100 # reset for next tests
 
     ############################################################
     ## SECOND PASS - RETAIN PROPORTION SIZE
@@ -229,6 +228,44 @@ def main():
     plt.grid()
     plt.show()
 
+    ############################################################
+    ## FINAL PASS - BEST CONFIGURATION
+
+    population_size = 200
+    retain = 0.2
+    mutate = 0.15
+
+    individual_min = -50
+    individual_max = 50
+    generations = 1000
+    random_select = 0.05
+    mutate = 0.15
+    mutation_limit = 2.5
+    crossover_variance = 0.5
+    
+    dataset = sample_poynomial(100, -2, 2)
+
+    Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+    Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+
+    # create initial population
+    population = Population(population_size)
+    fitness = 0
+    # evolve population over a number of generations
+    for i in range(generations):
+        
+        population.evolve()
+        fitness = population.evaluate_fitness()
+        print("Generation:", i, "Best Fitness:", fitness)
+
+        if (fitness < 1):
+
+            best_individual = population.get_best_individual()
+            print(" Best Individual Genes:", best_individual.genes)
+            break
+
+    population.plot_fitness_history()
+        
     
 
 # assign main function to entry point
