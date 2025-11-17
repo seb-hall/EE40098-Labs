@@ -96,11 +96,12 @@ class Individual:
             end = start + Individual.bits_per_gene
             gene_bits = chromosome[start:end]
             gray_encoded = Individual.gray_encode(gene_bits)
-            binary = Individual.gray_decode(gray_encoded)
+            
+            binary = Individual.gray_decode(gene_bits)  # assume gene_bits is Gray
             int_val = int(''.join(map(str, binary)), 2)
             real_val = Individual.min + (Individual.max - Individual.min) * int_val / (2**Individual.bits_per_gene - 1)
             genes.append(real_val)
-        
+                    
         return genes
     
     # create a child individual from two parents

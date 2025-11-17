@@ -56,6 +56,8 @@ class Population:
         # initialize fitness history
         self.fitness_history = [self.evaluate_fitness()]
         self.best_individual = None
+
+        self.schema_history = [0]
     
     ############################################################
     ## INSTANCE METHODS
@@ -118,10 +120,12 @@ class Population:
         self.individuals = parents
 
         # Track schema for leading coefficient ≈25 (first 15 bits of first gene)
-        target_leading = [1,1,0,0,1,0,1,1,0,0,1,1,0,1,0]  # first 15 bits
+        target_leading = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # first 15 bits
         count = sum(1 for ind in self.individuals 
                 if all(ind.chromosome[i] == target_leading[i] for i in range(15)))
         print(f"  Schema (leading coeff) matches: {count}")
+
+        self.schema_history.append(count)
 
         # evaluate fitness and record history
         fitness = self.evaluate_fitness()
@@ -152,6 +156,15 @@ class Population:
         plt.grid(True)
         plt.show()
 
+    def plot_schema_history(self):
+        plt.figure(figsize=(6, 4))
+        plt.plot(self.schema_history)
+        plt.title("Schema Matches Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Number of Matches")
+        plt.xlim(0, self.schema_history.__len__() - 1)
+        plt.grid(True)
+        plt.show()
 
 
 
