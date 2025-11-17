@@ -249,7 +249,7 @@ def main():
     # create initial population
     population = Population(population_size)
     fitness = 0
-    
+
     # evolve population over a number of generations
     for i in range(generations):
         
@@ -257,7 +257,7 @@ def main():
         fitness = population.evaluate_fitness()
         print("Generation:", i, "Best Fitness:", fitness)
 
-        if (fitness < 1):
+        if (fitness < 0.1):
 
             best_individual = population.get_best_individual()
             print(" Best Individual Genes:", best_individual.genes)

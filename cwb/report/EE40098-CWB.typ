@@ -246,7 +246,7 @@ After tuning the parameters, via direct analysis and strategic testing, the fina
 This resulted in a genetic algorithm that converged in approximately 250 generations to a mean squared error over the dataset of less than 1.0. The performance of the resultant configuration is shown in @ex4-overall, using a logarithmic scale for clarity and to show the rapid initial convergence.
 
 #figure(
-    image("resources/ex4-overall-2.png", width: 110%),
+    image("resources/ex4-overall-4.png", width: 110%),
     caption: [Plot of a single run of the resultant genetic algorithm.],
 )  <ex4-overall>
 
@@ -257,18 +257,18 @@ The final co-efficients found by the genetic algorithm were as follows:
     block(width: 100%, inset: (top: 0%, bottom: 0%),
         align(center, //Align starts here
             table(
-                columns: (auto, auto, auto),
+                columns: (auto, auto, auto, auto),
                 inset: 7.5pt,
                 align: horizon + center,
                 table.header(
-                    [*Co-efficient*], [*Target*], [*GA-Identified*],
+                    [*Co-efficient*], [*Target*], [*GA-\ Identified*], [*Error*],
                 ),
-                [a], [25], [25.620],
-                [b], [18], [17.816],
-                [c], [31], [27.820],
-                [d], [-14], [-13.400],
-                [e], [7], [10.6427],
-                [f], [-19], [-19.334],
+                [a], [25], [25.152], [0.152],
+                [b], [18], [18.036], [0.036],
+                [c], [31], [30.308],  [0.692],
+                [d], [-14], [-14.250], [0.250],
+                [e], [7], [7.583], [0.583],
+                [f], [-19], [-18.663], [0.337]
             )
         )
     )
