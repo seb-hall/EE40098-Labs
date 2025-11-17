@@ -170,6 +170,14 @@ This plot shows a clear inverse relationship between stop threshold and converge
 = Exercise 4
 _Using a genetic algorithm to optimise parameters for a 5th order polynomial._
 
+A genetic algorithm was implemented to search for the co-efficients of a 5th order polynomial. In real-world applications, genetic algorithms can be used for curve-fitting tasks for empirical data, where the underlying relationship is unknown or complex. 
+
+For this exercise, the target polynomial was defined as:
+
+$ y = 25x^5 + 18x^4 + 31x^3 - 14x^2 + 7x - 19 $
+
+The polynomial was then evaluated at 10,000 random points to simulate a captured dataset.
+
 // MARK: EX 5
 = Exercise 5
 _Explaining Holland's Schema Theorem based on exercise 1 using a genetic algorithm with binary encoding._
