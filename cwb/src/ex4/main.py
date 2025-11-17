@@ -54,30 +54,181 @@ def main():
 
     genes_count = 6
 
-    dataset = sample_poynomial(1000, -2, 2)
+    dataset = sample_poynomial(100, -2, 2)
+
+    search_generations = 10
+
+    population_sizes_count = 1
+    retain_proportions_count = 1
+    mutation_proportions_count = 1
+    mutation_limits_count = 1000
+
+    ############################################################
+    ## FIRST PASS - POPULATION SIZE
 
     # configure individual and population parameters
     Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
     Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
 
-    # create initial population
-    population = Population(population_size)
+    min_population_size = 10
+    max_population_size = 500
+    population_sizes = [random.randint(min_population_size, max_population_size) for _ in range(population_sizes_count)]
 
-    # evolve population over a number of generations
-    for i in range(generations):
-        population.evolve()
+    population_size_performance = []
 
-        best_fitness = population.evaluate_fitness()
-        print("Generation", i, "Best Fitness:", best_fitness)
-
-        if best_fitness < 1000:
-            print("Converged in", i, "generations.")
-            break
-
-    # plot fitness history
-    population.plot_fitness_history()
+    for i in range(len(population_sizes)):
         
+        print("Testing population size:", i)
+
+        population_size = population_sizes[i]
+
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            best_fitness = population.evaluate_fitness()
+        
+        population_size_performance.append(best_fitness)
     
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(population_sizes, population_size_performance, s=5)
+    plt.title('Population Size vs Convergence Performance')
+    plt.xlabel('Population Size')
+    plt.xlim(min_population_size, max_population_size)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+    #population = 350
+    population_size = 100
+
+    ############################################################
+    ## SECOND PASS - RETAIN PROPORTION SIZE
+        
+    min_retain_proportion = 0.1
+    max_retain_proportion = 0.5
+    retain_proportions = [random.uniform(min_retain_proportion, max_retain_proportion) for _ in range(retain_proportions_count)]
+    retain_proportion_performance = []
+
+    for i in range(len(retain_proportions)):
+        
+        print("Testing retain proportion:", i)
+
+        retain = retain_proportions[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        retain_proportion_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(retain_proportions, retain_proportion_performance, s=5)
+    plt.title('Retain Proportion vs Convergence Performance')
+    plt.xlabel('Retain Proportion')
+    plt.xlim(min_retain_proportion, max_retain_proportion)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+    
+    ############################################################
+    ## THIRD PASS - MUTATION PROPORTION
+        
+    min_mutation_proportion = 0
+    max_mutation_proportion = 0.5
+    mutation_proportions = [random.uniform(min_mutation_proportion, max_mutation_proportion) for _ in range(mutation_proportions_count)]
+    mutation_proportion_performance = []
+
+    for i in range(len(mutation_proportions)):
+        
+        print("Testing mutate proportion:", i)
+
+        mutate = mutation_proportions[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        mutation_proportion_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(mutation_proportions, mutation_proportion_performance, s=5)
+    plt.title('Mutate Proportion vs Convergence Performance')
+    plt.xlabel('Mutate Proportion')
+    plt.xlim(min_mutation_proportion, max_mutation_proportion)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
+
+    ############################################################
+    ## FOURTH PASS - MUTATION LIMIT
+        
+    min_mutation_limit = 0
+    max_mutation_limit = 50
+    mutation_limits = [random.uniform(min_mutation_limit, max_mutation_limit) for _ in range(mutation_limits_count)]
+    mutation_limit_performance = []
+
+    for i in range(len(mutation_limits)):
+        
+        print("Testing mutate limit:", i)
+
+        mutation_limit = mutation_limits[i]
+        Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+        Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+        
+        # create initial population
+        population = Population(population_size)
+
+        fitness = 0
+
+        # evolve population over a number of generations
+        for i in range(search_generations):
+
+            population.evolve()
+            fitness = population.evaluate_fitness()
+        
+        mutation_limit_performance.append(fitness)
+
+    # plot
+    plt.figure(figsize=(6, 4))
+    plt.scatter(mutation_limits, mutation_limit_performance, s=5)
+    plt.title('Mutate Limit vs Convergence Performance')
+    plt.xlabel('Mutate Limit')
+    plt.xlim(min_mutation_limit, max_mutation_limit)
+    plt.ylim(0, generations)
+    plt.ylabel('Error after ' + str(search_generations) + ' Generations')
+    plt.grid()
+    plt.show()
+
     
 
 # assign main function to entry point

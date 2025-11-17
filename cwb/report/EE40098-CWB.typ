@@ -170,13 +170,60 @@ This plot shows a clear inverse relationship between stop threshold and converge
 = Exercise 4
 _Using a genetic algorithm to optimise parameters for a 5th order polynomial._
 
-A genetic algorithm was implemented to search for the co-efficients of a 5th order polynomial. In real-world applications, genetic algorithms can be used for curve-fitting tasks for empirical data, where the underlying relationship is unknown or complex. 
+A genetic algorithm was implemented to search for the co-efficients of a 5th order polynomial in the following form:
+
+$ y = a x^5 + b x^4 + c x^3 + d x^2 + e x + f $ 
+
+In real-world applications, genetic algorithms can be used for curve-fitting tasks for empirical data, where the underlying relationship is unknown or complex. 
 
 For this exercise, the target polynomial was defined as:
 
 $ y = 25x^5 + 18x^4 + 31x^3 - 14x^2 + 7x - 19 $
 
-The polynomial was then evaluated at 10,000 random points to simulate a captured dataset.
+The solution for this exercise was modelled around a more representative real-world application, and so the first step in solving the problem was to generate a dataset of sample points from the target polynomial.
+
+== Dataset Generation
+
+Due to the 5th order nature of the polynomial, any $x$ values significantly larger than 1 result in extremely large $y$ values, dominated by the 25$x^5$ term. To avoid this, the dataset was sampled over the range -2 to 2, which would produce a range of $y$ values that were more equally dependant on all co-efficients. A total of 1000 sample points were generated for the dataset.
+
+== Code Implementation
+
+The classes for 'Individual' and 'Population' were modified to handle the shift from a single number search to a multi-variable polynomial co-efficient search.
+
+The 'Individual' class was modified to have a set of genes corresponding to the co-efficients of the polynomial. The static property for target value was replaced with the target dataset, and the fitness evaluation method was modified to calculated the mean squared error (MSE) between the polynomial defined by the individual's genes and the target dataset. This is an industry standard metric for regression tasks. The crossover logic and mutation logic were also updated to handle multiple genes.
+
+The 'Population' class remained largely unchanged, with the exception of making mutation per-gene rather than per-individual. A helper method for managing the best individual was added.
+
+The updated source code for this exercise can be found in @ex4-source-code.
+
+== Parameter Tuning
+
+The genetic algorithm parameters were tuned to improve performance for this specific problem. The parameters studied were:
+
+1. *Population Size*
+2. *Retain Proportion*
+3. *Mutation Proportion*
+4. *Mutation Limit*
+
+Each one of these was varied within a range, and the error after 100 generations was recorded as a measure of performance. 
+
+#figure(
+    image("resources/ex4-population-2.png", width: 110%),
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+)  <ex4-population>
+
+
+
+#figure(
+    image("resources/ex4-population-2.png", width: 110%),
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+)  <ex4-population>
+
+
+#figure(
+    image("resources/ex4-mutate.png", width: 110%),
+    caption: [Performance comparison of different crossover variances over 10,000 samples.],
+)  <ex4-mutate>
 
 // MARK: EX 5
 = Exercise 5
@@ -854,3 +901,5 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+== Exercise 4: Source Code <ex4-source-code>

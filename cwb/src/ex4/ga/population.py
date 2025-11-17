@@ -55,6 +55,7 @@ class Population:
 
         # initialize fitness history
         self.fitness_history = [self.evaluate_fitness()]
+        self.best_individual = None
     
     ############################################################
     ## INSTANCE METHODS
@@ -68,7 +69,11 @@ class Population:
         # find the best fitness in the population
         for i in range(len(self.individuals)):
             min_error = min(min_error, self.individuals[i].evaluate_fitness())
-            
+
+            # store the best individual
+            if min_error == self.individuals[i].evaluate_fitness():
+                self.best_individual = self.individuals[i]
+
         return min_error
 
     # evolve this population to the next generation
@@ -122,6 +127,10 @@ class Population:
             return self.fitness_history[-1]
         else:
             return Individual.get_worst_fitness()
+    
+    # get the current best individual in the population
+    def get_best_individual(self):
+        return self.best_individual
         
     # plot the fitness history with matplotlib
     def plot_fitness_history(self):

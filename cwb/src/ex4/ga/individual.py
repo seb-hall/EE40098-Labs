@@ -92,5 +92,7 @@ class Individual:
             y_pred = (a*(x**5)) + (b*(x**4)) + (c*(x**3)) + (d*(x**2)) + (e*x) + f
             total_error += (y_pred - y_target) ** 2 # using squared error
 
-        return total_error
+        mean_error = total_error / len(Individual.target_data)
+
+        return mean_error
     
