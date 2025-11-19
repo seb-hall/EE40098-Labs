@@ -5,7 +5,7 @@
 ## File         :  individual.py
 ## Exercise     :  5
 ## Author       :  samh25
-## Created      :  2025-11-17 (YYYY-MM-DD)
+## Created      :  2025-11-18 (YYYY-MM-DD)
 ## License      :  MIT
 ## Description  :  A class representing an individual in a 
 ##                 genetic algorithm.
@@ -16,7 +16,8 @@
 ## MARK: INCLUDES
 ################################################################
 
-from random import uniform, random, randint
+from random import uniform, random
+import numpy as np
 
 ################################################################
 ## MARK: CLASS DEFINITIONS
@@ -28,8 +29,6 @@ class Individual:
     ## STATIC VARIABLES
 
     genes_count = 6
-    bits_per_gene = 24
-    chromosome_length = genes_count * bits_per_gene
 
     # example starting parameters
     min = 0 
@@ -42,85 +41,37 @@ class Individual:
     ## STATIC METHODS
 
     # set parameters for all individuals
-    def set_parameters(min, max, target_data, mutation_limit, crossover_variance, genes_count, bits_per_gene):
+    def set_parameters(min, max, target_data, mutation_limit, crossover_variance, genes_count):
         Individual.min = min
         Individual.max = max
         Individual.target_data = target_data
         Individual.mutation_limit = mutation_limit
         Individual.crossover_variance = crossover_variance
         Individual.genes_count = genes_count
-        Individual.bits_per_gene = bits_per_gene
-        Individual.chromosome_length = genes_count * bits_per_gene
 
     # get the worst possible fitness value
     def get_worst_fitness():
         return float('inf')
 
-    # encode a list of binary genes into gray code
-    def gray_encode(bits):
-        
-        gray_genes = []
-        
-        for i in range(len(bits)):
-            if i > 0:
-                gray_gene = bits[i] ^ bits[i - 1]
-            else:
-                gray_gene = bits[i]
-        
-            gray_genes.append(gray_gene)
-
-        return gray_genes
-    
-    # decode a list of gray code genes into binary
-    def gray_decode(gray_bits):
-        
-        binary_genes = []
-        
-        for i in range(len(gray_bits)):
-            if i > 0:
-                binary_gene = gray_bits[i] ^ binary_genes[i - 1]
-            else:
-                binary_gene = gray_bits[i]
-        
-            binary_genes.append(binary_gene)
-
-        return binary_genes
-    
-    # decode a chromosome into its gene values
-    def decode(chromosome):
-
-        genes = []
-
-        for i in range(Individual.genes_count):
-            start = i * Individual.bits_per_gene
-            end = start + Individual.bits_per_gene
-            gene_bits = chromosome[start:end]
-            gray_encoded = Individual.gray_encode(gene_bits)
-            
-            binary = Individual.gray_decode(gene_bits)  # assume gene_bits is Gray
-            int_val = int(''.join(map(str, binary)), 2)
-            real_val = Individual.min + (Individual.max - Individual.min) * int_val / (2**Individual.bits_per_gene - 1)
-            genes.append(real_val)
-                    
-        return genes
-    
     # create a child individual from two parents
     def crossover(male, female):
 
         child = Individual()
-        if random() < 0.7:  # crossover probability
-            point = randint(1, Individual.chromosome_length - 2)
-            child.chromosome = male.chromosome[:point] + female.chromosome[point:]
-        else:
-            child.chromosome = male.chromosome[:]  # clone
+
+        for i in range(Individual.genes_count):
+
+            # use blend crossover
+            alpha = 0.5 - ((random() / 2) * Individual.crossover_variance)
+            child.genes[i] = np.int16((male.genes[i] * alpha) + (female.genes[i] * (1 - alpha)))
+
         return child
-        
+    
     ############################################################
     ## CONSTRUCTOR
     
     # instantiate a new individual
     def __init__(self):
-        self.chromosome = [randint(0, 1) for _ in range(Individual.chromosome_length)]
+        self.genes = [np.int16(uniform(Individual.min, Individual.max)) for _ in range(Individual.genes_count)]
 
     ############################################################
     ## INSTANCE METHODS
@@ -128,15 +79,17 @@ class Individual:
     # mutate this individual per-gene
     def mutate(self, gene_index):
 
-        # use bit-flip mutation
-        bit_pos = gene_index * Individual.bits_per_gene + randint(0, Individual.bits_per_gene - 1)
-        self.chromosome[bit_pos] = 1 - self.chromosome[bit_pos]
+        # use a small, limited range mutation
+        mutation = uniform(-Individual.mutation_limit, Individual.mutation_limit) * 1.0 # ensure float
+        self.genes[gene_index] = np.int16(max(Individual.min, min(Individual.max, self.genes[gene_index] + mutation)))
 
     # evaluate the fitness of this individual, using absolute error over dataset
     def evaluate_fitness(self):
         
         total_error = 0.0
-        a, b, c, d, e, f = Individual.decode(self.chromosome)
+        
+        coeffs = [gene / 1000.0 for gene in self.genes]
+        a, b, c, d, e, f = coeffs
 
         for x, y_target in Individual.target_data:
             y_pred = (a*(x**5)) + (b*(x**4)) + (c*(x**3)) + (d*(x**2)) + (e*x) + f

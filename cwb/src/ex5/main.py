@@ -5,7 +5,7 @@
 ## File         :  main.py
 ## Exercise     :  5
 ## Author       :  samh25
-## Created      :  2025-11-17 (YYYY-MM-DD)
+## Created      :  2025-11-18 (YYYY-MM-DD)
 ## License      :  MIT
 ## Description  :  Main program for exercise 5.
 ##
@@ -39,46 +39,46 @@ def sample_poynomial(count, min_x, max_x):
 
 # main program entry point
 def main():
-
-    random.seed(42)  # reproducible
     
     # set parameters
-    individual_min = -50
-    individual_max = 50
+    
+    individual_min = -32768
+    individual_max = 32768
     generations = 1000
     random_select = 0.05
-    mutate = 0.008
+    mutate = 0.15
     population_size = 200
     retain = 0.2
-    mutation_limit = 2.5
+    mutation_limit = 500
     crossover_variance = 0.5
-    bits_per_gene = 24
-
     genes_count = 6
+
     
     dataset = sample_poynomial(100, -2, 2)
 
-    Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count, bits_per_gene=bits_per_gene)
+    Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
     Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
 
+    # create initial population
     population = Population(population_size)
+    fitness = 0
 
+    # evolve population over a number of generations
     for i in range(generations):
+        
         population.evolve()
-        best_fitness = population.evaluate_fitness()
-        
-        if i % 50 == 0 or best_fitness < 10:
-            print(f"Gen {i:4d} | Best MSE: {best_fitness:.6f}")
+        fitness = population.evaluate_fitness()
+        print("Generation:", i, "Best Fitness:", fitness)
 
-        if best_fitness < 0.1:   # effectively zero
-            best = population.get_best_individual()
-            genes = Individual.decode(best.chromosome)
-            print("\nEXACT SOLUTION FOUND!")
-            print("Coefficients:", [round(g) for g in genes])
-            print("Target:       [25, 18, 31, -14, 7, -19]")
+        if (fitness < 0.1):
+
+            best_individual = population.get_best_individual()
+            print(" Best Individual Genes:", best_individual.genes)
             break
-        
+
     population.plot_fitness_history()
+        
+    
 
 # assign main function to entry point
 if __name__ == '__main__':

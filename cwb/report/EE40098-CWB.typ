@@ -71,7 +71,7 @@ Three genetic processes were implemented:
 
 1. *Selection* - a proportion of the most fit individuals are selected to remain in the population.
 2. *Mutation* - some individuals have their genes modified randomly to introduce genetic diversity.
-3. *Reproduction* - pairs of individuals are combined to produce offspring with a crossover of genes.
+3. *Crossover* - pairs of individuals are combined to produce offspring with a crossover of genes.
 
 An example plot showing the evolution of fitness over 10 generations with a population size of 10 is shown in Figure <ex1-fitness>.
 
@@ -300,6 +300,11 @@ Where:
 In other words, schemas that are short (low definintg length) and simple (low order) are less likely to be disrupted by crossover and mutation, allowing them to propagate through generations if they contribute positively to fitness.
 
 We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail.
+
+In order to apply the schema theorem with binary encoding, the 'Individual' class was further modified to represent genes with a known, fixed length type.
+
+The 'int16' type was selected, being a signed integer type with a length of 16 bits.
+
 
 // MARK: REFERENCES
 = References
