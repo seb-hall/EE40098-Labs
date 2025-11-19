@@ -70,7 +70,7 @@ def main():
         fitness = population.evaluate_fitness()
         print("Generation:", i, "Best Fitness:", fitness)
 
-        if (fitness < 0.1):
+        if (fitness < 1):
 
             best_individual = population.get_best_individual()
             print(" Best Individual Genes:", best_individual.genes)

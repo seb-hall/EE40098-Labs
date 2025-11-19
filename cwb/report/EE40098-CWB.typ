@@ -297,13 +297,27 @@ Where:
 - $p_m$ is the mutation probability
 - $p_c$ is the crossover probability
 
-In other words, schemas that are short (low definintg length) and simple (low order) are less likely to be disrupted by crossover and mutation, allowing them to propagate through generations if they contribute positively to fitness.
+In other words, schemas that are short (low defining length) and simple (low order) are less likely to be disrupted by crossover and mutation, allowing them to propagate through generations if they contribute positively to fitness.
 
-We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail.
+We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail. In order to apply the schema theorem with binary encoding, the 'Individual' class was further modified to represent genes with a known, fixed size type.
+16 bits was chosen for the gene size, with a good trade-off between being large enough to represent a wide range of values, but short enough to allow schemas to be analysed. 
 
-In order to apply the schema theorem with binary encoding, the 'Individual' class was further modified to represent genes with a known, fixed length type.
+#figure(
+    image("resources/ex5-fitness-2.png", width: 100%),
+    caption: [Plot of a sing],
+)  <ex5-fitness>
 
-The 'int16' type was selected, being a signed integer type with a length of 16 bits.
+To work better in the co-efficient seeking problem, the genes were set as signed 16-bit integers with a fixed-point scaling factor of 1000. This allows the genes to represent co-efficients in the range -32.768 to 32.767 with a fixed precision of three decimal places. 
+
+The modified genetic algorithm performed similarly, achieving a mean squared error of less than 1.0 over the dataset in under 300 generations, as shown in @ex5-fitness, and co-efficients of 25.801, 18.098, 27.230, -14.285, 10.903 and -19.036.
+
+== Demonstrating the Schema Theorem
+
+To demonstrate Holland's Schema Theorem, we can chose 3 representative schemas to track over generations. Using the constant co-efficient as an example, we can define the following schemas:
+
+1. Schema A: 1011010111001000, the full value of -19.000 in fixed-point, 2's complement representation.
+2. Schema B: 10110101\*\*\*\*, the upper byte of the value, representing -19.200 to -18.945.
+3. Schema C: 1\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*: just the leading 1 (corresponding to a negative coefficient).
 
 
 // MARK: REFERENCES
