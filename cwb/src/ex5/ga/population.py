@@ -3,7 +3,7 @@
 ## EE40098 Coursework B
 ##
 ## File         :  population.py
-## Exercise     :  t
+## Exercise     :  5
 ## Author       :  samh25
 ## Created      :  2025-11-17 (YYYY-MM-DD)
 ## License      :  MIT

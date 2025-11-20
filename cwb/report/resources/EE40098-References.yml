@@ -1,18 +1,33 @@
-perceptron:
+genetic-algorithms:
     type: Article
-    title: "The Perceptron: A Model for Brain Functioning"
-    date: 1962
-    author: H.D Block
+    title: "Genetic Algorithms"
+    date: 1996
+    author: S. Forrest
+    url: https://doi.org/10.1145/234313.234350
 
-mnist:
-    type: Web
-    title: MNIST
-    date: 2025
-    url: http://yann.lecun.com/exdb/mnist/
+genetic-algorithms-processes:
+    type: Article
+    title: Genetic Algorithms
+    date: 1992
+    author: J. H. Holland
+    url: http://www.jstor.org/stable/24939139
 
-monte-carlo:
+curve-fitting:
+    type: Article
+    title: "A curve-fitting genetic algorithm for a styling application"
+    date: 2004
+    author: M. Sevaux, Y. Mineur
+    url: https://doi.org/10.1016/j.ejor.2005.03.065
+
+mse:
+    type: Article
+    title: "Mean square error criteria to multiresponse process optimization by a new genetic algorithm"
+    date: 2006
+    author: O Koksoy, Tankut Yalcinoz
+    url: https://doi.org/10.1016/j.amc.2005.09.011
+
+holland:
     type: Book
-    title: Monte Carlo Methods
-    date: 1964
-    author: J. M. Hammersley and D. C. Handscomb
-
+    title: "Adaptation in Natural and Artificial Systems"
+    date: 1975
+    author: J. H. Holland

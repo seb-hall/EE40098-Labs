@@ -64,13 +64,13 @@ def main():
     # full value of -19
     schema_a = Schema(gene_index=5, bit_mask=0b1111111111111111, bit_pattern=0b1011010111001000)
 
-    # upper 8 bits, in range -19.2 to -18.945
+    # upper 8 bits, in range -19.200 to -18.945
     schema_b = Schema(gene_index=5, bit_mask=0b1111111100000000, bit_pattern=0b1011010111001000)
 
-    # upper 4 bits, in range -20480 to -16.385
+    # upper 4 bits, in range -20.480 to -16.385
     schema_c = Schema(gene_index=5, bit_mask=0b1111000000000000, bit_pattern=0b1011010111001000)
 
-    # upper 6 bits, in range -32768 to -16.385
+    # upper 6 bits, in range -32.768 to -16.385
     schema_d = Schema(gene_index=5, bit_mask=0b1100000000000000, bit_pattern=0b1011010111001000)
 
     # MSB only

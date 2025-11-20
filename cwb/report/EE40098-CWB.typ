@@ -58,22 +58,23 @@
 // MARK: INTRO
 = Introduction
 
-Genetic algorithms (GAs) are a type of iterative algorithm based on biological evolution. They are used to find approximate solutions to optimisation and search problems by mimicking processes such as natural selection and genetic mutation to simulate a 'survival of the fittest' scenario over multiple generations. 
+Genetic algorithms (GAs) are a type of iterative algorithm inspired by biological processes such as evolution @genetic-algorithms.
+They are used to find solutions to optimisation and search problems by implementing processes such as natural selection and genetic mutation to simulate a 'survival of the fittest' scenario over multiple generations. 
 
 // MARK: EX 1
 = Exercise 1
 
 _Implementation of a simple genetic algorithm to search for a target value._
 
-A simple genetic algorithm was created in Python to search for a number in the shortest number of iterations. This was achieved with an object-oriented approach that defined an 'Individual' class to represent a candidate solution, and a 'Population' class to manage individuals and evolution.
+A simple genetic algorithm was created in Python to search for a target number in the shortest number of iterations. This was achieved with an object-oriented approach that defined an 'Individual' class to represent a candidate solution, and a 'Population' class to manage individuals and evolution.
 
-Three genetic processes were implemented:
+Three genetic processes were implemented @genetic-algorithms-processes:
 
-1. *Selection* - a proportion of the most fit individuals are selected to remain in the population.
-2. *Mutation* - some individuals have their genes modified randomly to introduce genetic diversity.
-3. *Crossover* - pairs of individuals are combined to produce offspring with a crossover of genes.
+1. *Selection* - a proportion of the most fit individuals were selected to remain in the population.
+2. *Mutation* - some individuals had their genes randomly modified to introduce genetic diversity.
+3. *Crossover* - pairs of individuals were combined to produce offspring with a combination of genes.
 
-An example plot showing the evolution of fitness over 10 generations with a population size of 10 is shown in Figure <ex1-fitness>.
+An example plot showing the evolution of fitness over 10 generations with a population size of 10 is shown in @ex1-fitness.
 
 #figure(
     image("resources/ex1-fitness.png", width: 110%),
@@ -88,7 +89,7 @@ The source code for this exercise can be found in @ex1-source-code.
 = Exercise 2
 _Analysis of the genetic algorithm created in exercise 1._
 
-The classes representing individuals and populations in exercise 1 were reused to perform a sensitivity analysis on several parameters of the genetic algorithm. The parameters analysed were:
+The classes representing individuals and populations in exercise 1 were reused to perform a sensitivity analysis on several parameters of the genetic algorithm. These were:
 
 1. *Population Size* - the number of individuals in the population.
 2. *Mutation Proportion* - the proportion of surviving individuals that undergo mutation each generation.
@@ -96,7 +97,7 @@ The classes representing individuals and populations in exercise 1 were reused t
 4. *Retain Proportion* - the proportion of the best individuals that are retained each generation.
 5. *Crossover Variance* - the variance of blending genes from two parents when creating a child.
 
-Each parameter was varied randomly over a range of values, with 10,000 samples taken for each. The modified Python script can be found in @ex2-source-code.
+Each parameter was varied randomly over a range of values, with 10,000 samples taken for each. The modified Python scripts can be found in @ex2-source-code.
 
 == Population Size Analysis
 
@@ -157,7 +158,7 @@ This showed minimal effect on convergence, suggesting that gene blending plays a
 = Exercise 3
 _Implementation a stop condition for the algorithm created in exercise 1._
 
-Stopping the algorithm early when a satisfactory solution is found can save computation time and resouces. This can be achieved quite simply by comparing the best fitness in the population to a defined threshold after each generation. If the best fitness is below this threshold, the algorithm can terminate early. A study was performed to analyse the effect of different thresholds on convergence time, within the range of 0 to 0.5. The results are shown in @ex3-stoptime and the source code can be found in @ex3-source-code.
+Stopping the algorithm early when a satisfactory solution is found can save computation time and resouces. This can be achieved quite simply by comparing the smallest error in the population to a threshold at each generation. If the best error is below this threshold, the algorithm can terminate early as it has found an adequate solution. A study was performed to analyse the effect of different thresholds on convergence time, in the range of 0 to 0.5. The results are shown in @ex3-stoptime and the source code can be found in @ex3-source-code.
 
 #figure(
     image("resources/ex3-stoptime.png", width: 110%),
@@ -180,17 +181,17 @@ For this exercise, the target polynomial was defined as:
 
 $ y = 25x^5 + 18x^4 + 31x^3 - 14x^2 + 7x - 19 $
 
-The solution for this exercise was modelled around a more representative real-world application, and so the first step in solving the problem was to generate a dataset of sample points from the target polynomial.
+The solution for this exercise was modelled around a more representative real-world application @curve-fitting, and so the first step in solving the problem was to generate a dataset of sample points from the target polynomial.
 
 == Dataset Generation
 
-Due to the 5th order nature of the polynomial, any $x$ values significantly larger than 1 result in extremely large $y$ values, dominated by the 25$x^5$ term. To avoid this, the dataset was sampled over the range -2 to 2, which would produce a range of $y$ values that were more equally dependant on all co-efficients. A total of 1000 sample points were generated for the dataset.
+Due to the polynomial being 5th order, any $x$ values significantly larger than 1 result in extremely large $y$ values, dominated by the 25$x^5$ term. To avoid this, the dataset was sampled over the range -2 to 2, which would produce a range of $y$ values that were more equally dependant on all co-efficients. A total of 1000 sample points were generated for the dataset.
 
 == Code Implementation
 
 The classes for 'Individual' and 'Population' were modified to handle the shift from a single number search to a multi-variable polynomial co-efficient search.
 
-The 'Individual' class was modified to have a set of genes corresponding to the co-efficients of the polynomial. The static property for target value was replaced with the target dataset, and the fitness evaluation method was modified to calculated the mean squared error (MSE) between the polynomial defined by the individual's genes and the target dataset. This is an industry standard metric for regression tasks. The crossover logic and mutation logic were also updated to handle multiple genes.
+The 'Individual' class was modified to have a set of genes corresponding to the co-efficients of the polynomial. The static property for target value was replaced with the target dataset, and the fitness evaluation method was modified to calculated the mean squared error (MSE) between the polynomial defined by the individual's genes and the target dataset. This is an industry standard metric for regression tasks @mse. The crossover logic and mutation logic were also updated to handle multiple genes.
 
 The 'Population' class remained largely unchanged, with the exception of making mutation per-gene rather than per-individual. A helper method for managing the best individual was added.
 
@@ -206,33 +207,6 @@ The genetic algorithm parameters were tuned to improve performance for this spec
 4. *Mutation Limit*
 
 Each one of these was varied within a range, and the error after 10 generations was recorded as a measure of performance (10 being chosen for speed).  
-
-#figure(
-    image("resources/ex4-population-2.png", width: 110%),
-    caption: [Performance comparison of different population size values.],
-)  <ex4-population>
-
-Population size (@ex4-population) a trend of larger populations leading to lower error, likely due to increased genetic diversity.
-
-However, the other parameters (@ex4-retain, @ex4-mutate and @ex4-mutate-limit) showed less clear trends.
-
-#figure(
-    image("resources/ex4-retain.png", width: 110%),
-    caption: [Performance comparison of different retain proportion values.],
-)  <ex4-retain>
-
-
-#figure(
-    image("resources/ex4-mutate.png", width: 110%),
-    caption: [Performance comparison of different mutation proportion values.],
-)  <ex4-mutate>
-
-#figure(
-    image("resources/ex4-mutate-limit.png", width: 110%),
-    caption: [Performance comparison of different mutate limit values.],
-)  <ex4-mutate-limit>
-
-\
 
 == Final Results
 
@@ -276,13 +250,12 @@ The final co-efficients found by the genetic algorithm were as follows:
 
 While most of these are close to their targets, some such as $c$ and $e$ are further off. The result is likely restricted by the size of test data. A larger set would likely result in a more accurate output, but would have taken significantly longer to compute.
 
-\ 
 
 // MARK: EX 5
 = Exercise 5
-_Explaining Holland's Schema Theorem based on exercise 1 using a genetic algorithm with binary encoding._
+_Explaining Holland's Schema Theorem based on exercise 4 using a genetic algorithm with binary encoding._
 
-Holland's Schema Theorem suggests that short, low-order schema with above-average fitness tend to increase exponentially in successive generations of a genetic algorithm. It can be expressed with the following equation:
+Holland's Schema Theorem @holland suggests that short, low-order schema with above-average fitness tend to increase exponentially in successive generations of a genetic algorithm. It can be expressed with the following equation:
 
 $ m(H,t+1) >= m(H,t) (overline(f)(H,t))/(overline(f)(t)) (1 - p_c delta(H)/(L - 1) - o(H)p_m ) $
 
@@ -302,42 +275,55 @@ In other words, schemas that are short (low defining length) and simple (low ord
 We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail. In order to apply the schema theorem with binary encoding, the 'Individual' class was further modified to represent genes with a known, fixed size type.
 16 bits was chosen for the gene size, with a good trade-off between being large enough to represent a wide range of values, but short enough to allow schemas to be analysed. 
 
-#figure(
-    image("resources/ex5-fitness-2.png", width: 100%),
-    caption: [Plot of a sing],
-)  <ex5-fitness>
-
-To work better in the co-efficient seeking problem, the genes were set as signed 16-bit integers with a fixed-point scaling factor of 1000. This allows the genes to represent co-efficients in the range -32.768 to 32.767 with a fixed precision of three decimal places. 
-
-The modified genetic algorithm performed similarly, achieving a mean squared error of less than 1.0 over the dataset in under 300 generations, as shown in @ex5-fitness, and co-efficients of 25.801, 18.098, 27.230, -14.285, 10.903 and -19.036.
+To work better in the co-efficient seeking problem, the genes were treated as signed 16-bit integers with a fixed-point scaling factor of 1000. This allows the genes to represent co-efficients in the range -32.768 to 32.767 with a fixed precision of three decimal places. 
 
 == Demonstrating the Schema Theorem
 
-To demonstrate Holland's Schema Theorem, we can chose 3 representative schemas to track over generations. Using the constant co-efficient as an example, we can define the following schemas:
+To demonstrate Holland's Schema Theorem, we can chose 5 representative schemas to track over generations. Using the constant co-efficient as an example, we can define the following schemas, based on a decreasing defining length:
 
 #figure(
     caption: "Schema Patterns for Constant Coefficient",
     block(width: 100%, inset: (top: 0%, bottom: 0%),
         align(center, //Align starts here
             table(
-                columns: (auto, auto),
+                columns: (auto, auto, auto),
                 inset: 7.5pt,
                 align: horizon + center,
                 table.header(
-                    [*Schema*], [*Pattern*]
+                    [*Schema*], [*Pattern*], [*Range*]
                 ),
-                [A], [```1011010111001000```],
-                [B], [```10110101********```],
-                [C], [```1***************```]
+                [A], [```1011010111001000```], [-19.000 (exact)],
+                [B], [```10110101********```], [-19.200 to -18.945],
+                [C], [```1011************```], [-20.000 to -16.385],
+                [D], [```10**************```], [-32.768 to -16.385],
+                [E], [```1***************```], [-32.768 to 0.000] 
 
             )
         )
     )
 ) <schemas>
 
-Where schema A corresponds to the the full value of -19.000 in fixed-point, 2's complement representation,
-schema B corresponds to the upper byte of the value (-19.200 to -18.945), 
-and schema C corresponds to just the most significant bit (indicating a negative value).
+The prevalence of these values during an optimisation run was then tracked, using the modified source code found in @ex5-source-code. 
+
+A plot of the schema fitness using the 16-bit genes is shown in @ex5-schema-fitness and the propagation of the schemas over time is shown in @ex5-schema-fitness-sch.
+
+#figure(
+    image("resources/ex5-fitness-5.png", width: 120%),
+    caption: [Best population fitness over generations with 16-bit genes.],
+)  <ex5-schema-fitness>
+
+
+#figure(
+    image("resources/ex5-fitness-5-sch.png", width: 120%),
+    caption: [Schema fitness over generations - Schema A (purple), Schema B (red), Schema C (green), Schema D (orange) and Schema E (blue).],
+)  <ex5-schema-fitness-sch>
+
+As shown in @ex5-schema-fitness-sch, the trend between schema length and prevalence is extremely clear. The shortest schema (D and E) were almost immediately adopted by all individuals in the population, schema C was adopted by all around halfway through the run, schema B was only adopted by some of the population towards the end, and schema A was never adopted by any individuals (as the exact value was never found by the algorithm).  
+
+This is a clear demonstration of Holland's Schema Therem, showing that shorter, lower-order schemas with above-average fitness tend to propagate more successfully through generations of a genetic algorithm, and therefore demonstrating the capabilty of genetic algorithms to converge on optimal solutions over time.
+
+= Conclusion
+
 
 
 // MARK: REFERENCES
@@ -1537,6 +1523,457 @@ def main():
 
     population.plot_fitness_history()
         
+    
+
+# assign main function to entry point
+if __name__ == '__main__':
+    main()
+```
+
+== Exercise 5: Source Code <ex5-source-code>
+=== schema.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  schema.py
+## Exercise     :  5
+## Author       :  samh25
+## Created      :  2025-11-20 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing a schema in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+import numpy as np
+
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
+class Schema:
+
+    ############################################################
+    ## CONSTRUCTOR
+    
+    # instantiate a new schema
+    def __init__(self, gene_index, bit_mask, bit_pattern):
+
+        self.gene_index = gene_index
+
+        # ensure bit mask and pattern are uint16
+        self.bit_mask = np.uint16(bit_mask)
+        self.bit_pattern = np.uint16(bit_pattern)
+```
+
+=== individual.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  individual.py
+## Exercise     :  5
+## Author       :  samh25
+## Created      :  2025-11-18 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing an individual in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from .schema import Schema
+from random import uniform, random
+import numpy as np
+
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
+class Individual:   
+
+    ############################################################
+    ## STATIC VARIABLES
+
+    genes_count = 6
+
+    # example starting parameters
+    min = 0 
+    max = 100
+    mutation_limit = 5
+    target_data = []
+    crossover_variance = 1
+
+    ############################################################
+    ## STATIC METHODS
+
+    # set parameters for all individuals
+    def set_parameters(min, max, target_data, mutation_limit, crossover_variance, genes_count):
+        Individual.min = min
+        Individual.max = max
+        Individual.target_data = target_data
+        Individual.mutation_limit = mutation_limit
+        Individual.crossover_variance = crossover_variance
+        Individual.genes_count = genes_count
+
+    # get the worst possible fitness value
+    def get_worst_fitness():
+        return float('inf')
+
+    # create a child individual from two parents
+    def crossover(male, female):
+
+        child = Individual()
+
+        for i in range(Individual.genes_count):
+
+            # use blend crossover
+            alpha = 0.5 - ((random() / 2) * Individual.crossover_variance)
+            child.genes[i] = np.int16((male.genes[i] * alpha) + (female.genes[i] * (1 - alpha)))
+
+        return child
+    
+    ############################################################
+    ## CONSTRUCTOR
+    
+    # instantiate a new individual
+    def __init__(self):
+        self.genes = [np.int16(uniform(Individual.min, Individual.max)) for _ in range(Individual.genes_count)]
+
+    ############################################################
+    ## INSTANCE METHODS
+
+    # mutate this individual per-gene
+    def mutate(self, gene_index):
+
+        # use a small, limited range mutation
+        mutation = uniform(-Individual.mutation_limit, Individual.mutation_limit) * 1.0 # ensure float
+        self.genes[gene_index] = np.int16(max(Individual.min, min(Individual.max, self.genes[gene_index] + mutation)))
+
+    # evaluate if this individual matches a given schema
+    def evaluate_schema(self, schema):
+        gene_u16 = np.uint16(self.genes[schema.gene_index]) # cast to uint16 for bitwise operations
+        return (gene_u16 & schema.bit_mask) == (schema.bit_pattern & schema.bit_mask)
+
+    # evaluate the fitness of this individual, using absolute error over dataset
+    def evaluate_fitness(self):
+        
+        total_error = 0.0
+        
+        coeffs = [gene / 1000.0 for gene in self.genes]
+        a, b, c, d, e, f = coeffs
+
+        for x, y_target in Individual.target_data:
+            y_pred = (a*(x**5)) + (b*(x**4)) + (c*(x**3)) + (d*(x**2)) + (e*x) + f
+            total_error += (y_pred - y_target) ** 2 # using squared error
+
+        mean_error = total_error / len(Individual.target_data)
+
+        return mean_error
+```
+
+=== population.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  population.py
+## Exercise     :  5
+## Author       :  samh25
+## Created      :  2025-11-17 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  A class representing an population in a 
+##                 genetic algorithm.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from random import randint, random, shuffle
+import matplotlib.pyplot as plt
+
+from .individual import Individual
+from .schema import Schema
+
+################################################################
+## MARK: CLASS DEFINITIONS
+################################################################
+
+class Population:
+
+    ############################################################
+    ## STATIC VARIABLES
+
+    # example starting parameters
+    retain = 0.2
+    random_select = 0.05
+    mutate = 0.01
+
+    ############################################################
+    ## STATIC METHODS
+
+    # set parameters for all populations
+    def set_parameters(retain, random_select, mutate):
+        Population.retain = retain
+        Population.random_select = random_select
+        Population.mutate = mutate
+
+    ############################################################
+    ## CONSTRUCTOR
+    
+    # instantiate a new population
+    def __init__(self, size, schema_list):
+
+        # create a list of individuals
+        self.individuals = [Individual() for _ in range(size)]
+
+        # initialize fitness history
+        self.fitness_history = [self.evaluate_fitness()]
+        self.best_individual = None
+        
+        # store schema
+        self.schema_list = schema_list
+        self.schema_history = [self.evaluate_schema_fitness()]
+    
+    ############################################################
+    ## INSTANCE METHODS
+
+    # evaluate the fitness of this population
+    def evaluate_fitness(self):
+        
+        # find the worst possible fitness value
+        min_error = Individual.get_worst_fitness()
+
+        # find the best fitness in the population
+        for i in range(len(self.individuals)):
+            min_error = min(min_error, self.individuals[i].evaluate_fitness())
+
+            # store the best individual
+            if min_error == self.individuals[i].evaluate_fitness():
+                self.best_individual = self.individuals[i]
+
+        return min_error
+    
+    def evaluate_schema_fitness(self):
+
+        schema_fitness_results = []
+
+        for schema in self.schema_list:
+
+            match_count = 0
+
+            for individual in self.individuals:
+
+                if individual.evaluate_schema(schema):
+                    match_count += 1
+
+            print("Schema Gene Index:", schema.gene_index, "Bit Mask:", schema.bit_mask, "Bit Pattern:", schema.bit_pattern, "Match Count:", match_count)
+
+            schema_fitness_results.append(match_count / len(self.individuals))
+
+        return schema_fitness_results
+
+    # evolve this population to the next generation
+    def evolve(self):
+
+        # evaluate fitness of all individuals and sort them
+        evaluated_individuals = [(individual.evaluate_fitness(), individual) for individual in self.individuals]
+        evaluated_individuals = [x[1] for x in sorted(evaluated_individuals, key=lambda x: x[0])]
+
+        # select the best individuals to be parents
+        retain_length = int(len(evaluated_individuals) * self.retain)
+        parents = evaluated_individuals[:retain_length]
+
+        # randomly individuals outside of the best to promote genetic diversity
+        for individual in evaluated_individuals[retain_length:]:
+            if self.random_select > random():
+                parents.append(individual)
+
+        # mutate some individuals
+        for individual in parents:
+            for gene_index in range(Individual.genes_count):
+                if self.mutate > random():
+                    individual.mutate(gene_index)
+
+        # identify number of children to create
+        parents_length = len(parents)
+        desired_length = len(self.individuals) - parents_length
+
+        # Shuffle parents and breed sequentially (no infinite loop ever)
+        shuffle(parents)
+        children = []
+
+        for i in range(desired_length):
+            # Cycle through parents if we run out
+            male = parents[i % parents_length]
+            female = parents[(i + 1) % parents_length]    # guaranteed different
+            child = Individual.crossover(male, female)
+            children.append(child)
+
+        # create the new generation
+        parents.extend(children)
+        self.individuals = parents
+
+        # evaluate fitness and record history
+        fitness = self.evaluate_fitness()
+        self.fitness_history.append(fitness)
+
+        schema_fitness = self.evaluate_schema_fitness()
+        self.schema_history.append(schema_fitness)
+    
+    # get the current best fitness in the population
+    def get_fitness(self):
+        if self.fitness_history.__len__() > 0:
+            return self.fitness_history[-1]
+        else:
+            return Individual.get_worst_fitness()
+    
+    # get the current best individual in the population
+    def get_best_individual(self):
+        return self.best_individual
+        
+    # plot the fitness history with matplotlib
+    def plot_fitness_history(self):
+        plt.figure(figsize=(6, 4))
+        plt.plot(self.fitness_history)
+        plt.title("Population Fitness Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Best Fitness")
+        plt.yscale("log")
+        plt.xlim(0, self.fitness_history.__len__() - 1)
+        plt.grid(True)
+        plt.show()
+
+    def plot_schema_history(self):
+        plt.figure(figsize=(6, 4))
+
+        for schema_index in range(len(self.schema_list)):
+            schema_fitness_values = [generation[schema_index] for generation in self.schema_history]
+            plt.plot(schema_fitness_values, label=f"Schema {chr(ord('a') + schema_index)}")
+
+        plt.title("Schema Fitness Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Schema Fitness")
+        plt.ylim(0, 1.1)
+        plt.xlim(0, self.schema_history.__len__() - 1)
+        plt.grid(True)
+        plt.show()
+```
+
+=== main.py
+```python
+################################################################
+##
+## EE40098 Coursework B
+##
+## File         :  main.py
+## Exercise     :  5
+## Author       :  samh25
+## Created      :  2025-11-18 (YYYY-MM-DD)
+## License      :  MIT
+## Description  :  Main program for exercise 5.
+##
+################################################################
+
+################################################################
+## MARK: INCLUDES
+################################################################
+
+from ga import Population, Individual, Schema
+import random
+import matplotlib.pyplot as plt
+
+################################################################
+## MARK: FUNCTIONS
+################################################################
+
+# sample polynomial: 25x^5 + 18x^4 + 31x^3 - 14x^2 + 7x - 19
+def sample_poynomial(count, min_x, max_x):
+    
+    data = []
+
+    for _ in range(count):
+        
+        x = random.uniform(min_x, max_x)
+        y = 25*(x**5) + 18*(x**4) + 31*(x**3) - 14*(x**2) + 7*x - 19
+        
+        data.append((x, y))
+    
+    return data
+
+# main program entry point
+def main():
+    
+    # set parameters
+    
+    individual_min = -32768
+    individual_max = 32767
+    generations = 1000
+    random_select = 0.05
+    mutate = 0.15
+    population_size = 200
+    retain = 0.2
+    mutation_limit = 500
+    crossover_variance = 0.5
+    genes_count = 6
+
+    
+    dataset = sample_poynomial(100, -2, 2)
+
+    Individual.set_parameters(min = individual_min, max = individual_max, target_data = dataset, mutation_limit = mutation_limit, crossover_variance=crossover_variance, genes_count=genes_count)
+    Population.set_parameters(retain = retain, random_select = random_select, mutate = mutate)
+
+    # define schemas to track
+
+    # full value of -19
+    schema_a = Schema(gene_index=5, bit_mask=0b1111111111111111, bit_pattern=0b1011010111001000)
+
+    # upper 8 bits, in range -19.200 to -18.945
+    schema_b = Schema(gene_index=5, bit_mask=0b1111111100000000, bit_pattern=0b1011010111001000)
+
+    # upper 4 bits, in range -20.480 to -16.385
+    schema_c = Schema(gene_index=5, bit_mask=0b1111000000000000, bit_pattern=0b1011010111001000)
+
+    # upper 6 bits, in range -32.768 to -16.385
+    schema_d = Schema(gene_index=5, bit_mask=0b1100000000000000, bit_pattern=0b1011010111001000)
+
+    # MSB only
+    schema_e = Schema(gene_index=5, bit_mask=0b1000000000000000, bit_pattern=0b1011010111001000)
+
+    schema_list = [schema_a, schema_b, schema_c, schema_d, schema_e]
+
+    # create initial population
+    population = Population(population_size, schema_list)
+    fitness = 0
+
+    # evolve population over a number of generations
+    for i in range(generations):
+        
+        population.evolve()
+        fitness = population.evaluate_fitness()
+        print("Generation:", i, "Best Fitness:", fitness)
+
+        if (fitness < 1):
+
+            best_individual = population.get_best_individual()
+            print(" Best Individual Genes:", best_individual.genes)
+            break
+
+    population.plot_fitness_history()
+    population.plot_schema_history()
     
 
 # assign main function to entry point
