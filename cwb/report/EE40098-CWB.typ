@@ -315,9 +315,29 @@ The modified genetic algorithm performed similarly, achieving a mean squared err
 
 To demonstrate Holland's Schema Theorem, we can chose 3 representative schemas to track over generations. Using the constant co-efficient as an example, we can define the following schemas:
 
-1. Schema A: 1011010111001000, the full value of -19.000 in fixed-point, 2's complement representation.
-2. Schema B: 10110101\*\*\*\*, the upper byte of the value, representing -19.200 to -18.945.
-3. Schema C: 1\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*: just the leading 1 (corresponding to a negative coefficient).
+#figure(
+    caption: "Schema Patterns for Constant Coefficient",
+    block(width: 100%, inset: (top: 0%, bottom: 0%),
+        align(center, //Align starts here
+            table(
+                columns: (auto, auto),
+                inset: 7.5pt,
+                align: horizon + center,
+                table.header(
+                    [*Schema*], [*Pattern*]
+                ),
+                [A], [```1011010111001000```],
+                [B], [```10110101********```],
+                [C], [```1***************```]
+
+            )
+        )
+    )
+) <schemas>
+
+Where schema A corresponds to the the full value of -19.000 in fixed-point, 2's complement representation,
+schema B corresponds to the upper byte of the value (-19.200 to -18.945), 
+and schema C corresponds to just the most significant bit (indicating a negative value).
 
 
 // MARK: REFERENCES

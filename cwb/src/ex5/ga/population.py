@@ -3,7 +3,7 @@
 ## EE40098 Coursework B
 ##
 ## File         :  population.py
-## Exercise     :  4
+## Exercise     :  t
 ## Author       :  samh25
 ## Created      :  2025-11-17 (YYYY-MM-DD)
 ## License      :  MIT
@@ -20,6 +20,7 @@ from random import randint, random, shuffle
 import matplotlib.pyplot as plt
 
 from .individual import Individual
+from .schema import Schema
 
 ################################################################
 ## MARK: CLASS DEFINITIONS
@@ -48,7 +49,7 @@ class Population:
     ## CONSTRUCTOR
     
     # instantiate a new population
-    def __init__(self, size):
+    def __init__(self, size, schema_list):
 
         # create a list of individuals
         self.individuals = [Individual() for _ in range(size)]
@@ -56,6 +57,10 @@ class Population:
         # initialize fitness history
         self.fitness_history = [self.evaluate_fitness()]
         self.best_individual = None
+        
+        # store schema
+        self.schema_list = schema_list
+        self.schema_history = [self.evaluate_schema_fitness()]
     
     ############################################################
     ## INSTANCE METHODS
@@ -75,6 +80,25 @@ class Population:
                 self.best_individual = self.individuals[i]
 
         return min_error
+    
+    def evaluate_schema_fitness(self):
+
+        schema_fitness_results = []
+
+        for schema in self.schema_list:
+
+            match_count = 0
+
+            for individual in self.individuals:
+
+                if individual.evaluate_schema(schema):
+                    match_count += 1
+
+            print("Schema Gene Index:", schema.gene_index, "Bit Mask:", schema.bit_mask, "Bit Pattern:", schema.bit_pattern, "Match Count:", match_count)
+
+            schema_fitness_results.append(match_count / len(self.individuals))
+
+        return schema_fitness_results
 
     # evolve this population to the next generation
     def evolve(self):
@@ -120,6 +144,9 @@ class Population:
         # evaluate fitness and record history
         fitness = self.evaluate_fitness()
         self.fitness_history.append(fitness)
+
+        schema_fitness = self.evaluate_schema_fitness()
+        self.schema_history.append(schema_fitness)
     
     # get the current best fitness in the population
     def get_fitness(self):
@@ -141,6 +168,21 @@ class Population:
         plt.ylabel("Best Fitness")
         plt.yscale("log")
         plt.xlim(0, self.fitness_history.__len__() - 1)
+        plt.grid(True)
+        plt.show()
+
+    def plot_schema_history(self):
+        plt.figure(figsize=(6, 4))
+
+        for schema_index in range(len(self.schema_list)):
+            schema_fitness_values = [generation[schema_index] for generation in self.schema_history]
+            plt.plot(schema_fitness_values, label=f"Schema {chr(ord('a') + schema_index)}")
+
+        plt.title("Schema Fitness Over Generations")
+        plt.xlabel("Generation")
+        plt.ylabel("Schema Fitness")
+        plt.ylim(0, 1.1)
+        plt.xlim(0, self.schema_history.__len__() - 1)
         plt.grid(True)
         plt.show()
 

@@ -16,6 +16,7 @@
 ## MARK: INCLUDES
 ################################################################
 
+from .schema import Schema
 from random import uniform, random
 import numpy as np
 
@@ -82,6 +83,11 @@ class Individual:
         # use a small, limited range mutation
         mutation = uniform(-Individual.mutation_limit, Individual.mutation_limit) * 1.0 # ensure float
         self.genes[gene_index] = np.int16(max(Individual.min, min(Individual.max, self.genes[gene_index] + mutation)))
+
+    # evaluate if this individual matches a given schema
+    def evaluate_schema(self, schema):
+        gene_u16 = np.uint16(self.genes[schema.gene_index]) # cast to uint16 for bitwise operations
+        return (gene_u16 & schema.bit_mask) == (schema.bit_pattern & schema.bit_mask)
 
     # evaluate the fitness of this individual, using absolute error over dataset
     def evaluate_fitness(self):
