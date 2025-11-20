@@ -206,7 +206,12 @@ The genetic algorithm parameters were tuned to improve performance for this spec
 3. *Mutation Proportion*
 4. *Mutation Limit*
 
-Each one of these was varied within a range, and the error after 10 generations was recorded as a measure of performance (10 being chosen for speed).  
+Each one of these was varied within a range, and the error after 10 generations was recorded as a measure of performance (10 being chosen for speed). An example plot of the search for population size is shown in @ex4-population-size.
+
+#figure(
+    image("resources/ex4-population-2.png", width: 110%),
+    caption: [Performance comparison of different population sizes over 10,000 samples.],
+)  <ex4-population-size>
 
 == Final Results
 
@@ -275,7 +280,7 @@ In other words, schemas that are short (low defining length) and simple (low ord
 We can use the genetic algorithm developed in exercise 4 to illustrate this in more detail. In order to apply the schema theorem with binary encoding, the 'Individual' class was further modified to represent genes with a known, fixed size type.
 16 bits was chosen for the gene size, with a good trade-off between being large enough to represent a wide range of values, but short enough to allow schemas to be analysed. 
 
-To work better in the co-efficient seeking problem, the genes were treated as signed 16-bit integers with a fixed-point scaling factor of 1000. This allows the genes to represent co-efficients in the range -32.768 to 32.767 with a fixed precision of three decimal places. 
+To work better in the co-efficient seeking problem, the genes were treated as signed 16-bit integers with a fixed-point scaling factor of 0.001. This allows the genes to represent co-efficients in the range -32.768 to 32.767 with a fixed precision of three decimal places. 
 
 == Demonstrating the Schema Theorem
 
@@ -303,18 +308,18 @@ To demonstrate Holland's Schema Theorem, we can chose 5 representative schemas t
     )
 ) <schemas>
 
-The prevalence of these values during an optimisation run was then tracked, using the modified source code found in @ex5-source-code. 
+Schema values were defined by the 2's compliment representation of signed 16-bit integers, scaled by 0.001, and with the '\*' wildcard character representing bits outside of the schema.
 
-A plot of the schema fitness using the 16-bit genes is shown in @ex5-schema-fitness and the propagation of the schemas over time is shown in @ex5-schema-fitness-sch.
+The prevalence of these values during an optimisation run was then tracked, using the modified source code found in @ex5-source-code. A plot of the schema fitness using the 16-bit genes is shown in @ex5-schema-fitness and the propagation of the schemas over time is shown in @ex5-schema-fitness-sch.
 
 #figure(
-    image("resources/ex5-fitness-5.png", width: 120%),
+    image("resources/ex5-fitness-5.png", width: 110%),
     caption: [Best population fitness over generations with 16-bit genes.],
 )  <ex5-schema-fitness>
 
 
 #figure(
-    image("resources/ex5-fitness-5-sch.png", width: 120%),
+    image("resources/ex5-fitness-5-sch.png", width: 110%),
     caption: [Schema fitness over generations - Schema A (purple), Schema B (red), Schema C (green), Schema D (orange) and Schema E (blue).],
 )  <ex5-schema-fitness-sch>
 
@@ -324,6 +329,9 @@ This is a clear demonstration of Holland's Schema Therem, showing that shorter, 
 
 = Conclusion
 
+This coursework has successfully demonstrated the implementation, analysis and application of genetic algorithms for optimisation tasks. While the problems and algorithms explored here are relatively simple, they illustrate the fundamental principles and capabilities of genetic algorithms, which could be extended to more complex and real-world problems in future work.
+
+Futhermore, the demonstration of Holland's Schema Theorem provides insight into the underlying processes that drive convergence and optimisation in genetic algorithms, by focusing on a bit-level analysis of schema propagation.
 
 
 // MARK: REFERENCES
