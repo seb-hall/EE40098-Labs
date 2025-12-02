@@ -1,5 +1,4 @@
 
-
 # %%
 from cwc.src.data import DataLoader
 import numpy as np
@@ -102,5 +101,149 @@ print("Final MAD Gain:", mad_gain)
 
 # %%
 
+
+# %%
+# align detected spikes
+
+processor.align_spikes(target_peak_pos=20, window_size=64)
+
+print("\nAligned Spikes count", len(processor.aligned_spikes))
+print("Aligned spikes shape", processor.aligned_spikes.shape)
+
+# %%
+processor.extract_features()
+
+print(f"PCA reduced from 64 → {processor.features.shape[1]} dimensions")
+print(f"Explained variance ratio (first 6): {processor.pca.explained_variance_ratio_[:]}")
+print(f"Total variance kept: {processor.pca.explained_variance_ratio_.sum():.4f}")
+
+# %%
+from cwc.src.classifier import Classifier
+
+processor.correlate_classes(distance_threshold=25)
+
+print(f"\nKept {len(processor.correlated_classes)} out of {len(processor.aligned_spikes)} total aligned spikes")
+
+
+classifier = processor.create_classifier()
+classifier.train()
+
+print(f"Training accuracy: {classifier.accuracy:.4f}")
+
+# %%
+indices, classes = processor.classify_detected_spikes(classifier=classifier)
+
+print(f"\nClassified {len(indices)} spikes")
+
+# %%
+# compare classified spikes with true spikes
+true_indices = dataset.indices
+true_classes = dataset.classes
+
+correct_classifications = 0
+incorrect_classifications = 0
+
+for i in range(len(true_indices)):
+    true_idx = true_indices[i]
+    true_cls = true_classes[i]
+    
+    # find closest detected spike
+    closest_idx = min(indices, key=lambda x: abs(x - true_idx))
+    detected_cls = classes[np.where(indices == closest_idx)[0][0]]
+
+    if true_cls == detected_cls:
+        correct_classifications += 1
+    else:
+        incorrect_classifications += 1
+    
+print(f"\nCorrect Classifications: {correct_classifications}")
+print(f"Incorrect Classifications: {incorrect_classifications}")
+
+# %%
+from cwc.src.classifier import Classifier
+
+processor.calculate_mad()
+
+# binary search for mad gain
+
+min_gain = 1.0
+max_gain = 20.0
+
+threshold = 44
+best_incorrect = 1000
+
+mad_gain = 0.0
+
+while (best_incorrect > threshold):
+
+    mad_gain = (min_gain + max_gain) / 2.0
+    processor.detect_spikes(mad_gain=mad_gain, distance=25)
+    processor.align_spikes(target_peak_pos=20, window_size=64)
+    processor.extract_features()
+
+    processor.correlate_classes(distance_threshold=25)
+
+    classifier = processor.create_classifier()
+    classifier.train()
+
+    indices, classes = processor.classify_detected_spikes(classifier=classifier)
+
+
+    # compare classified spikes with true spikes
+    true_indices = dataset.indices
+    true_classes = dataset.classes
+
+    correct_classifications = 0
+    incorrect_classifications = 0
+
+    for i in range(len(true_indices)):
+        true_idx = true_indices[i]
+        true_cls = true_classes[i]
+        
+        # find closest detected spike
+        closest_idx = min(indices, key=lambda x: abs(x - true_idx))
+        detected_cls = classes[np.where(indices == closest_idx)[0][0]]
+
+        if true_cls == detected_cls:
+            correct_classifications += 1
+        else:
+            incorrect_classifications += 1
+            
+    if incorrect_classifications < best_incorrect:
+        max_gain = mad_gain
+    else:
+        min_gain = mad_gain
+
+    if incorrect_classifications < best_incorrect:
+        best_incorrect = incorrect_classifications
+
+    print(f"\nDetected {len(processor.detected_spikes)} spikes")
+    print(f"Correct Classifications: {correct_classifications}")
+    print(f"Incorrect Classifications: {incorrect_classifications}")
+
+
+
+
+
+# %%
+# now use best mad_gain found
+unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
+
+for data_path in unlabelled_datasets:
+    print(f"\nProcessing unlabelled dataset: {data_path}")
+    dataset.load_from_mat_unlabelled(data_path)
+    processor = SignalProcessor(dataset)
+    processor.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    processor.extract_spikes(window_size=64)
+    processor.compute_offsets()
+    processor.calculate_mad()
+    processor.detect_spikes(mad_gain=mad_gain, distance=25)
+    processor.align_spikes(target_peak_pos=20, window_size=64)
+    processor.extract_features()
+    processor.correlate_classes(distance_threshold=25)
+    indices, classes = processor.classify_detected_spikes(classifier=classifier)
+    print(f"Classified {len(indices)} spikes in unlabelled dataset.")
+
+    dataset.write_to_mat(data_path.replace("cwc/data/", "cwc/data/output/"), indices, classes)
 
 
