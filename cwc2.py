@@ -138,7 +138,6 @@ print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
 print("\tIncorrect Detections:", incorrect_detections)
 print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detections + incorrect_detections)))
 
-
 # plot detected spikes on training data, alonside the true spike indices
 
 if in_jupyter():
@@ -149,40 +148,23 @@ if in_jupyter():
 
 
 # %%
-# NOW, TEST NON-OVERLAPPING TEMPLATE MATCHING 
+templator.data = train_filter.filtered_data
+templator.indices = train_spikes.detected_spikes
+templator.compare_to_templates()
 
-templator.detect_with_templates(
-    correlation_threshold=0.60,
-    min_distance=25)
+# evaluate spike classification performance on training set
+correct_classifications = 0
 
-## evaluate spike detection performance on training set
-correct_detections = 0
-false_positives = 0
-false_negatives = 0
-
-for detected_spike in templator.indices:
-    if any(np.abs(train_spikes.indices - detected_spike) <= min_distance):
-        correct_detections += 1
-    else:
-        false_positives += 1
-
-incorrect_detections = false_positives + (len(train_spikes.indices) - correct_detections)
-
-print("Training Set Spike Detection:")
-print("\tCorrect Detections:", correct_detections, "out of ", len(train_spikes.indices))
-print("\tFalse Positives:", false_positives)
-print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
-print("\tIncorrect Detections:", incorrect_detections)
-print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detections + incorrect_detections)))
-
-
-# plot detected spikes on training data, alonside the true spike indices
-
-if in_jupyter():
-    plt.plot(train_filter.filtered_data)
-    plt.scatter(templator.indices, train_filter.filtered_data[templator.indices], color='red')
-    plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
-    plt.show()
-
+for detected_index in templator.indices:
+    closest_true_index = train_spikes.indices[np.argmin(np.abs(train_spikes.indices - detected_index))]
+    true_class = train_spikes.classes[np.where(train_spikes.indices == closest_true_index)[0][0]]
+    detected_class = templator.classes[np.where(templator.indices == detected_index)[0][0]]
+    if true_class == detected_class:
+        correct_classifications += 1
+    
+        
+print("Training Set Spike Classification:")
+print("\tCorrect Classifications:", correct_classifications, "out of ", len(train_spikes.detected_spikes))
+print("\tAccuracy: {:.2f}%".format(100 * correct_classifications / len(train_spikes.detected_spikes)))
 
 
