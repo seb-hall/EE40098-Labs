@@ -225,7 +225,7 @@ for dataset_path in unlabelled_datasets:
     unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
 
 
-    unlabelled_data.write_to_mat(dataset_path.replace('cwc/data/', 'cwc/data/output/'), unlabelled_spikes.detected_spikes, unlabelled_predictions)
+    unlabelled_data.write_to_mat(dataset_path.replace('cwc/data/', 'cwc/data/output/'), unlabelled_processor.aligned_indices, unlabelled_predictions)
     print(f"Predictions saved to {dataset_path.replace('cwc/data/;', 'cwc/data/output/')}")
     print(f"Predictions for {dataset_path}: {np.bincount(unlabelled_predictions)}")
 
