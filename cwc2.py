@@ -178,7 +178,7 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detection
 
 # plot detected spikes on training data, alonside the true spike indices
 
-if in_jupyter():
+if in_jupyter() or True:
     plt.plot(train_filter.filtered_data)
     plt.scatter(templator.indices, train_filter.filtered_data[templator.indices], color='red')
     plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')

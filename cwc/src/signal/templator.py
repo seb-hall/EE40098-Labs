@@ -53,59 +53,58 @@ class Templator:
                 self.template_classes.append(cls)
 
 
-    def detect_with_templates(self, correlation_threshold=0.65, 
-                                     min_distance=25, max_detections_per_class=500):
+    def detect_with_templates(self, correlation_threshold=0.65, min_distance=25):
         all_detections = []
 
-        # normalise the signal
+        # Normalize the signal
         signal_norm = (self.data - np.mean(self.data)) / (np.std(self.data) + 1e-10)
 
-        i = 0
-        for template in self.templates:
+        for i, (template, cls) in enumerate(zip(self.templates, self.template_classes)):
+            
+            if len(template) == 0 or np.all(template == 0):
+                continue
 
-            # compute cross-correlation
+            # Cross-correlation
             correlation = np.correlate(signal_norm, template, mode='valid')
 
             # Normalize correlation
-            correlation = correlation / (np.linalg.norm(template) * np.sqrt(len(template)))
+            template_energy = np.linalg.norm(template)
+            correlation = correlation / (template_energy * np.sqrt(len(template)))
             
             # Find peaks in correlation
             peaks, properties = find_peaks(
                 correlation,
                 height=correlation_threshold,
                 distance=min_distance,
-                prominence=0.1
+                prominence=0.05
             )
 
-            # Adjust peak positions (correlation shifts the signal)
-            adjusted_peaks = peaks + len(template) // 2
+            # CORRECT adjustment: 
+            # correlation[i] means template starts at signal[i]
+            # Since template has peak at position 0 (target_offset=0),
+            # the spike peak in signal is at position i + 0
+            adjusted_peaks = peaks + 0  # Or just: adjusted_peaks = peaks
 
             # Store detections with their correlation strength
             for peak, corr_value in zip(adjusted_peaks, properties['peak_heights']):
                 all_detections.append({
                     'index': peak,
-                    'class': self.template_classes[i],
+                    'class': cls,
                     'correlation': corr_value
                 })
-
-            i += 1
 
         # Sort by correlation strength
         all_detections.sort(key=lambda x: x['correlation'], reverse=True)
 
-        # Non-maximum suppression: keep highest correlation within distance window
+        # Non-maximum suppression
         final_detections = []
         used_positions = set()
         
         for detection in all_detections:
             idx = detection['index']
             
-            # Check if position is too close to already selected spike
-            too_close = False
-            for used_idx in used_positions:
-                if abs(idx - used_idx) < min_distance:
-                    too_close = True
-                    break
+            # Check if too close to existing detection
+            too_close = any(abs(idx - used_idx) < min_distance for used_idx in used_positions)
             
             if not too_close:
                 final_detections.append(detection)
@@ -114,8 +113,6 @@ class Templator:
         # Sort by index
         final_detections.sort(key=lambda x: x['index'])
         
-        # Extract indices and classes
+        # Extract results
         self.indices = np.array([d['index'] for d in final_detections])
         self.classes = np.array([d['class'] for d in final_detections])
-
-        self.indices = self.indices + 20
