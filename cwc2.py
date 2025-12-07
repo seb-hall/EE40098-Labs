@@ -127,4 +127,20 @@ plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indice
 plt.show()
 
 
+# %%
+## NEW APPROACH - TEMPLATING
+
+from cwc.src.signal import Templator
+
+templator = Templator(train_filter) 
+templator.create_templates(window_size=64, peak_offset=8)
+
+i = 1
+for template in templator.templates:
+    plt.plot(template)
+    plt.title("Spike Template - Class " + str(i))
+    i += 1
+    plt.show()
+
+
 
