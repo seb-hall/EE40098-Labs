@@ -132,7 +132,7 @@ for detected_spike in train_spikes.detected_spikes:
 incorrect_detections = false_positives + (len(train_spikes.indices) - correct_detections)
 
 print("Training Set Spike Detection:")
-print("\tCorrect Detections:", correct_detections)
+print("\tCorrect Detections:", correct_detections, "out of ", len(train_spikes.indices))
 print("\tFalse Positives:", false_positives)
 print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
 print("\tIncorrect Detections:", incorrect_detections)
@@ -169,7 +169,7 @@ for detected_spike in templator.indices:
 incorrect_detections = false_positives + (len(train_spikes.indices) - correct_detections)
 
 print("Training Set Spike Detection:")
-print("\tCorrect Detections:", correct_detections)
+print("\tCorrect Detections:", correct_detections, "out of ", len(train_spikes.indices))
 print("\tFalse Positives:", false_positives)
 print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
 print("\tIncorrect Detections:", incorrect_detections)
@@ -178,7 +178,7 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detection
 
 # plot detected spikes on training data, alonside the true spike indices
 
-if in_jupyter() or True:
+if in_jupyter():
     plt.plot(train_filter.filtered_data)
     plt.scatter(templator.indices, train_filter.filtered_data[templator.indices], color='red')
     plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
