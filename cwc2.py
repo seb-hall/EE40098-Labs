@@ -169,9 +169,6 @@ test_processor.scaler = processor.scaler  # Use the same scaler as training
 test_processor.pca = processor.pca  # Use the same PCA as training
 test_processor.extract_features()
 
-# Use the trained PCA transform
-test_processor.features = processor.pca.transform(test_processor.aligned_spikes)
-
 # Classify
 predictions = classifier.classifier.predict(test_processor.features)
 

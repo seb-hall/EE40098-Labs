@@ -30,7 +30,7 @@ class SignalProcessor:
         self.correlated_classes = np.array([])
         self.scaler = None
 
-        self.pca = PCA(n_components=8, whiten=True, random_state=42)
+        self.pca = PCA(n_components=64, whiten=True, random_state=42)
 
     def align_spikes(self, target_peak_pos, window_size):
 
@@ -66,14 +66,47 @@ class SignalProcessor:
 
     def extract_features(self):
 
+        """Extract more discriminative features"""
+        features_list = []
+        
+        for spike in self.aligned_spikes:
+            # Waveform shape features
+            peak_amplitude = np.min(spike)  # Negative peak
+            peak_idx = np.argmin(spike)
+            
+            # Temporal features
+            half_width = self._calculate_half_width(spike)
+            
+            # Derivative features
+            first_deriv = np.diff(spike)
+            max_rise = np.max(first_deriv)
+            max_fall = np.min(first_deriv)
+            
+            # Combine features
+            feat = np.concatenate([
+                spike,  # Raw waveform
+                [peak_amplitude, peak_idx, half_width, max_rise, max_fall]
+            ])
+            features_list.append(feat)
+        
+        features = np.array(features_list)
+        
         if self.scaler is None:
             self.scaler = StandardScaler()
-            scaled_spikes = self.scaler.fit_transform(self.aligned_spikes)
-            self.features = self.pca.fit_transform(scaled_spikes)
+            scaled = self.scaler.fit_transform(features)
+            self.features = self.pca.fit_transform(scaled)
         else:
-            # Use existing scaler (for test data)
-            scaled_spikes = self.scaler.transform(self.aligned_spikes)
-            self.features = self.pca.transform(scaled_spikes)
+            scaled = self.scaler.transform(features)
+            self.features = self.pca.transform(scaled)
+
+    def _calculate_half_width(self, spike):
+        """Calculate spike width at half-maximum amplitude"""
+        min_val = np.min(spike)
+        half_max = min_val / 2
+        below_half = spike < half_max
+        if np.any(below_half):
+            return np.sum(below_half)
+        return 0
 
     def correlate_classes(self, distance_threshold):
 
