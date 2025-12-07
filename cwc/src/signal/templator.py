@@ -13,7 +13,7 @@ class Templator:
         self.templates = []
         self.template_classes = []
 
-    def create_templates(self, window_size=64, peak_offset=20):
+    def create_templates(self, window_size=64, initial_offset=0, target_offset=20):
         
         unique_classes = np.unique(self.classes)
 
@@ -26,13 +26,23 @@ class Templator:
 
             for index in class_indices:
 
-                start = index - peak_offset
-                end = index + window_size
+                start = index - initial_offset
+                end = start + window_size
 
-                if index + window_size <= len(self.data):
+                if end <= len(self.data):
                     spike = self.data[start:end]
-                    spike = (spike - np.mean(spike)) / (np.std(spike) + 1e-10)  # normalize spike
-                    spikes.append(spike)
+
+                    actual_peak_pos = np.argmax(spike * -1.0)
+                    shift = target_offset - actual_peak_pos
+
+                    start = start - shift
+                    end = start + window_size
+
+                    if end <= len(self.data):
+                        spike = self.data[start:end]
+
+                        spike = (spike - np.mean(spike)) / (np.std(spike) + 1e-10)  # normalize spike
+                        spikes.append(spike)
 
             if spikes:
                 self.templates.append(np.mean(spikes, axis=0))
@@ -77,7 +87,7 @@ class Templator:
                     'class': self.template_classes[i],
                     'correlation': corr_value
                 })
-                
+
             i += 1
 
         # Sort by correlation strength
@@ -107,3 +117,5 @@ class Templator:
         # Extract indices and classes
         self.indices = np.array([d['index'] for d in final_detections])
         self.classes = np.array([d['class'] for d in final_detections])
+
+        self.indices = self.indices + 20

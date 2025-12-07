@@ -91,7 +91,7 @@ if in_jupyter():
 from cwc.src.signal import Templator
 
 templator = Templator(train_filter) 
-templator.create_templates(window_size=64, peak_offset=8)
+templator.create_templates(window_size=64, initial_offset=20, target_offset=0)
 
 if in_jupyter():
     i = 1
