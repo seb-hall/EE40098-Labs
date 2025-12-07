@@ -165,6 +165,8 @@ test_processor = SignalProcessor(test_data)
 test_processor.filtered_data = test_filter.filtered_data
 test_processor.detected_spikes = test_spikes.detected_spikes
 test_processor.align_spikes(target_peak_pos=20, window_size=64)
+test_processor.scaler = processor.scaler  # Use the same scaler as training
+test_processor.pca = processor.pca  # Use the same PCA as training
 test_processor.extract_features()
 
 # Use the trained PCA transform
@@ -175,18 +177,23 @@ predictions = classifier.classifier.predict(test_processor.features)
 
 # Evaluate test set performance
 correct_predictions = 0
-for i, predicted_class in enumerate(predictions):
-    detected_spike = test_processor.detected_spikes[i]
-    true_class_indices = np.where(test_processor.indices == detected_spike)[0]
-    if len(true_class_indices) > 0:
-        true_class = test_processor.classes[true_class_indices[0]]
+
+for i, detected_index in enumerate(test_processor.aligned_indices):
+    predicted_class = predictions[i]
+    
+    # Find closest ground truth spike
+    distances = np.abs(test_data.indices - detected_index)
+    closest_idx = np.argmin(distances)
+    
+    # Only count if detection is close enough to a real spike
+    if distances[closest_idx] <= 50:
+        true_class = test_data.classes[closest_idx]
         if predicted_class == true_class:
             correct_predictions += 1
 
 total_predictions = len(predictions)
 print("Test Set Classification:")
 print("\tCorrect Predictions:", correct_predictions, "out of ", total_predictions)
-print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions))
-
+print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions if total_predictions > 0 else 0))
 
 

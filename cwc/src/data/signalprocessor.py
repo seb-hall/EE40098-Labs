@@ -28,61 +28,9 @@ class SignalProcessor:
 
         self.features = np.array([])
         self.correlated_classes = np.array([])
-        
+        self.scaler = None
+
         self.pca = PCA(n_components=8, whiten=True, random_state=42)
-
-
-    def apply_band_pass_filter(self, filter_low, filter_high, sample_rate, order):
-        
-        nyquist = 0.5 * sample_rate
-        low = filter_low / nyquist
-        high = filter_high / nyquist
-
-        sos = butter(order, [low, high], btype='band', output='sos')
-        self.filtered_data = sosfiltfilt(sos, self.data)
-
-
-    def extract_spikes(self, window_size):
-
-        spikes = []
-
-        for index in self.indices:
-
-            if index + window_size <= len(self.data):
-
-                spike = self.filtered_data[index:index + window_size]
-                spikes.append(spike)
-
-        self.spikes = np.array(spikes)
-
-
-    def compute_offsets(self):
-
-        peak_offsets = []
-
-        for spike in self.spikes:
-            peak_offsets.append(np.argmax(np.abs(spike)))
-            
-        self.mean_offset = np.mean(peak_offsets)
-        self.std_offset = np.std(peak_offsets)
-        self.min_offset = np.min(peak_offsets)
-        self.max_offset = np.max(peak_offsets)
-
-
-    def calculate_mad(self):
-        
-        self.mad = np.median(np.abs(self.filtered_data)) / 0.6745
-
-
-    def detect_spikes(self, mad_gain, distance):
-
-        threshold = mad_gain * self.mad
-
-        peaks, _ = find_peaks(np.abs(self.filtered_data), height=threshold, distance=distance)
-        peaks = peaks - round(self.mean_offset)
-
-        self.detected_spikes = peaks
-
 
     def align_spikes(self, target_peak_pos, window_size):
 
@@ -118,10 +66,14 @@ class SignalProcessor:
 
     def extract_features(self):
 
-        scaler = StandardScaler()
-        scaled_spikes = scaler.fit_transform(self.aligned_spikes)
-
-        self.features = self.pca.fit_transform(scaled_spikes)
+        if self.scaler is None:
+            self.scaler = StandardScaler()
+            scaled_spikes = self.scaler.fit_transform(self.aligned_spikes)
+            self.features = self.pca.fit_transform(scaled_spikes)
+        else:
+            # Use existing scaler (for test data)
+            scaled_spikes = self.scaler.transform(self.aligned_spikes)
+            self.features = self.pca.transform(scaled_spikes)
 
     def correlate_classes(self, distance_threshold):
 
