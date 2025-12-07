@@ -86,6 +86,25 @@ if in_jupyter():
 
 
 # %%
+## NEW APPROACH - TEMPLATING
+
+from cwc.src.signal import Templator
+
+templator = Templator(train_filter) 
+templator.create_templates(window_size=64, peak_offset=8)
+
+if in_jupyter():
+    i = 1
+    for template in templator.templates:
+        plt.plot(template)
+        plt.title("Spike Template - Class " + str(i))
+        i += 1
+        plt.show()
+
+
+# %%
+# TEST PURE MAD SPIKE DETECTION
+
 from cwc.src.signal import SpikeDetector
 
 mad_gain = 3.3
@@ -121,25 +140,48 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detection
 
 
 # plot detected spikes on training data, alonside the true spike indices
-plt.plot(train_filter.filtered_data)
-plt.scatter(train_spikes.detected_spikes, train_filter.filtered_data[train_spikes.detected_spikes], color='red')
-plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
-plt.show()
+
+if in_jupyter():
+    plt.plot(train_filter.filtered_data)
+    plt.scatter(train_spikes.detected_spikes, train_filter.filtered_data[train_spikes.detected_spikes], color='red')
+    plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
+    plt.show()
 
 
 # %%
-## NEW APPROACH - TEMPLATING
+# NOW, TEST NON-OVERLAPPING TEMPLATE MATCHING 
 
-from cwc.src.signal import Templator
+templator.detect_with_templates(
+    correlation_threshold=0.60,
+    min_distance=25)
 
-templator = Templator(train_filter) 
-templator.create_templates(window_size=64, peak_offset=8)
+## evaluate spike detection performance on training set
+correct_detections = 0
+false_positives = 0
+false_negatives = 0
 
-i = 1
-for template in templator.templates:
-    plt.plot(template)
-    plt.title("Spike Template - Class " + str(i))
-    i += 1
+for detected_spike in templator.indices:
+    if any(np.abs(train_spikes.indices - detected_spike) <= min_distance):
+        correct_detections += 1
+    else:
+        false_positives += 1
+
+incorrect_detections = false_positives + (len(train_spikes.indices) - correct_detections)
+
+print("Training Set Spike Detection:")
+print("\tCorrect Detections:", correct_detections)
+print("\tFalse Positives:", false_positives)
+print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
+print("\tIncorrect Detections:", incorrect_detections)
+print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detections + incorrect_detections)))
+
+
+# plot detected spikes on training data, alonside the true spike indices
+
+if in_jupyter():
+    plt.plot(train_filter.filtered_data)
+    plt.scatter(templator.indices, train_filter.filtered_data[templator.indices], color='red')
+    plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
     plt.show()
 
 
