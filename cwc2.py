@@ -193,4 +193,44 @@ print("Test Set Classification:")
 print("\tCorrect Predictions:", correct_predictions, "out of ", total_predictions)
 print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions if total_predictions > 0 else 0))
 
+# %%
+# Now apply to the other datasets
+unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
+
+for dataset_path in unlabelled_datasets:
+
+    unlabelled_data = Dataset()
+    unlabelled_data.load_from_mat_unlabelled(dataset_path)
+    
+    unlabelled_filter = BandpassFilter(unlabelled_data)
+    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    
+    unlabelled_spikes = SpikeDetector(unlabelled_filter)
+    unlabelled_mad = unlabelled_spikes.calculate_mad()
+    unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=mad_gain, distance=min_distance)
+
+    if in_jupyter():
+        plt.plot(unlabelled_filter.filtered_data)
+        plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
+        plt.show()
+    
+    unlabelled_processor = SignalProcessor(unlabelled_data)
+    unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
+    unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
+    unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
+    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
+    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
+    unlabelled_processor.extract_features()
+    
+    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
+
+
+    unlabelled_data.write_to_mat(dataset_path.replace('cwc/data/', 'cwc/data/output/'), unlabelled_spikes.detected_spikes, unlabelled_predictions)
+    print(f"Predictions saved to {dataset_path.replace('cwc/data/;', 'cwc/data/output/')}")
+    print(f"Predictions for {dataset_path}: {np.bincount(unlabelled_predictions)}")
+
+    
+    
+
+
 

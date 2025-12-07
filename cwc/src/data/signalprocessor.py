@@ -30,7 +30,7 @@ class SignalProcessor:
         self.correlated_classes = np.array([])
         self.scaler = None
 
-        self.pca = PCA(n_components=64, whiten=True, random_state=42)
+        self.pca = PCA(n_components=32, whiten=True, random_state=42)
 
     def align_spikes(self, target_peak_pos, window_size):
 
