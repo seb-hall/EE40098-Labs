@@ -14,7 +14,7 @@ class Templator:
         self.template_classes = []
         self.window_size = 64
 
-    def create_templates(self, window_size=64, initial_offset=0, target_offset=20):
+    def create_templates(self, window_size=64, initial_offset=0, target_offset=0):
         
         self.window_size = window_size
         unique_classes = np.unique(self.classes)
@@ -56,26 +56,47 @@ class Templator:
 
 
     def compare_to_templates(self):
+
+        self.classes = np.array([])
+
         # compare data and indices to templates to classify spikes
         for index in self.indices:
 
-            if index + self.window_size >= len(self.data) - 1:
+            start = index
+            end = index + self.window_size
+
+            if end > len(self.data):
                 self.classes = np.append(self.classes, -1)  # unclassified
                 continue
 
-            spike = self.data[index:index + self.window_size]
-            spike = (spike - np.mean(spike)) / (np.std(spike) + 1e-10)  # normalize spike
+            spike = self.data[start:end]
 
+            # Find the negative peak within this window
+            actual_peak_pos = np.argmax(spike * -1.0)
+            
+            # Realign so peak is at position 0 (matching template alignment)
+            shift = 0 - actual_peak_pos
+            aligned_spike = np.zeros(self.window_size)
+
+            if shift > 0:
+                aligned_spike[shift:] = spike[:self.window_size-shift]
+            elif shift < 0:
+                aligned_spike[:self.window_size+shift] = spike[-shift:]
+            else:
+                aligned_spike = spike
+
+            # Normalize
+            aligned_spike = (aligned_spike - np.mean(aligned_spike)) / (np.std(aligned_spike) + 1e-10)
+
+            # Compare to templates
             best_match_class = None
             best_match_score = float('inf')
 
             for template, cls in zip(self.templates, self.template_classes):
-                score = np.sum((spike - template) ** 2)  # Mean Squared Error
+                score = np.sum((aligned_spike - template) ** 2)
 
                 if score < best_match_score:
                     best_match_score = score
                     best_match_class = cls
 
-            # assign the best matching class to the spike
             self.classes = np.append(self.classes, best_match_class)
-        

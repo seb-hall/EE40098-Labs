@@ -86,23 +86,6 @@ if in_jupyter():
 
 
 # %%
-## NEW APPROACH - TEMPLATING
-
-from cwc.src.signal import Templator
-
-templator = Templator(train_filter) 
-templator.create_templates(window_size=64, initial_offset=20, target_offset=0)
-
-if in_jupyter():
-    i = 1
-    for template in templator.templates:
-        plt.plot(template)
-        plt.title("Spike Template - Class " + str(i))
-        i += 1
-        plt.show()
-
-
-# %%
 # TEST PURE MAD SPIKE DETECTION
 
 from cwc.src.signal import SpikeDetector
@@ -146,25 +129,64 @@ if in_jupyter():
     plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
     plt.show()
 
+if in_jupyter():
+    plt.plot(test_filter.filtered_data)
+    plt.scatter(test_spikes.detected_spikes, test_filter.filtered_data[test_spikes.detected_spikes], color='red')
+    plt.scatter(test_spikes.indices, test_filter.filtered_data[test_spikes.indices], color='green', marker='x')
+    plt.show()
+
 
 # %%
-templator.data = train_filter.filtered_data
-templator.indices = train_spikes.detected_spikes
-templator.compare_to_templates()
+# After spike detection
+from cwc.src.data import SignalProcessor
 
-# evaluate spike classification performance on training set
-correct_classifications = 0
+processor = SignalProcessor(train_data)
+processor.filtered_data = train_filter.filtered_data
 
-for detected_index in templator.indices:
-    closest_true_index = train_spikes.indices[np.argmin(np.abs(train_spikes.indices - detected_index))]
-    true_class = train_spikes.classes[np.where(train_spikes.indices == closest_true_index)[0][0]]
-    detected_class = templator.classes[np.where(templator.indices == detected_index)[0][0]]
-    if true_class == detected_class:
-        correct_classifications += 1
-    
-        
-print("Training Set Spike Classification:")
-print("\tCorrect Classifications:", correct_classifications, "out of ", len(train_spikes.detected_spikes))
-print("\tAccuracy: {:.2f}%".format(100 * correct_classifications / len(train_spikes.detected_spikes)))
+# Align and extract spikes
+processor.detected_spikes = train_spikes.detected_spikes
+processor.align_spikes(target_peak_pos=20, window_size=64)
+
+# Extract PCA features
+processor.extract_features()
+
+# Match to ground truth for training
+processor.correlate_classes(distance_threshold=50)
+
+# Train classifier
+classifier = processor.create_classifier()
+
+print(f"Classifier trained with {len(processor.correlated_classes)} samples")
+print(f"Training accuracy: {classifier.accuracy:.2%}")
+
+# %%
+# Create new processor for test data
+test_processor = SignalProcessor(test_data)
+test_processor.filtered_data = test_filter.filtered_data
+test_processor.detected_spikes = test_spikes.detected_spikes
+test_processor.align_spikes(target_peak_pos=20, window_size=64)
+test_processor.extract_features()
+
+# Use the trained PCA transform
+test_processor.features = processor.pca.transform(test_processor.aligned_spikes)
+
+# Classify
+predictions = classifier.classifier.predict(test_processor.features)
+
+# Evaluate test set performance
+correct_predictions = 0
+for i, predicted_class in enumerate(predictions):
+    detected_spike = test_processor.detected_spikes[i]
+    true_class_indices = np.where(test_processor.indices == detected_spike)[0]
+    if len(true_class_indices) > 0:
+        true_class = test_processor.classes[true_class_indices[0]]
+        if predicted_class == true_class:
+            correct_predictions += 1
+
+total_predictions = len(predictions)
+print("Test Set Classification:")
+print("\tCorrect Predictions:", correct_predictions, "out of ", total_predictions)
+print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions))
+
 
 
