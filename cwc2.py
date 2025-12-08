@@ -129,7 +129,7 @@ if in_jupyter():
     plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
     plt.show()
 
-if in_jupyter():
+if in_jupyter() or True:
     plt.plot(test_filter.filtered_data)
     plt.scatter(test_spikes.detected_spikes, test_filter.filtered_data[test_spikes.detected_spikes], color='red')
     plt.scatter(test_spikes.indices, test_filter.filtered_data[test_spikes.indices], color='green', marker='x')
