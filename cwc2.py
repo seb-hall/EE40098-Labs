@@ -369,6 +369,49 @@ for i, noisy_dataset in enumerate(noisy_datasets):
 print("====FINISHED NOISY DATA TESTS====")
 
 # %%
+# SYSTEMATIC THRESHOLD SWEEP
+print("====THRESHOLD SWEEP====")
+
+test_gains = np.arange(1.6, 3.2, 0.1)
+
+for noise_idx, noisy_dataset in enumerate(noisy_datasets):
+    print(f"\n=== Noise Level {noise_levels[noise_idx]} ===")
+    
+    unlabelled_filter = BandpassFilter(noisy_dataset)
+    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    
+    best_f1 = 0
+    best_gain = 0
+    results = []
+    
+    for gain in test_gains:
+        detector = SpikeDetector(unlabelled_filter)
+        mad = detector.calculate_mad()
+        detector.detect_spikes(mad=mad, mad_gain=gain, distance=60)
+        
+        metrics = evaluate_detection_proper(detector.detected_spikes, 
+                                           noisy_dataset.indices, 
+                                           tolerance=50)
+        
+        results.append({
+            'gain': gain,
+            'p': metrics['precision'],
+            'r': metrics['recall'],
+            'f1': metrics['f1']
+        })
+        
+        if metrics['f1'] > best_f1:
+            best_f1 = metrics['f1']
+            best_gain = gain
+    
+    # Print all results
+    for r in results:
+        marker = " <-- BEST" if r['gain'] == best_gain else ""
+        print(f"  Gain {r['gain']:.1f}: P={r['p']:.3f}, R={r['r']:.3f}, F1={r['f1']:.3f}{marker}")
+    
+    print(f"Best: gain={best_gain:.1f}, F1={best_f1:.3f}")
+
+# %%
 # Now apply to the other datasets
 unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
 mad_gains = [2.5, 2.5, 2.5, 2.5, 2.5]
