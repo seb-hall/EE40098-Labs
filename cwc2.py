@@ -60,7 +60,10 @@ def evaluate_detection_proper(detected_spikes, true_indices, tolerance=50):
 # LOAD BASE DATASET
 
 from cwc.src.data import Dataset
+from cwc.src.signal import BandpassFilter
 from cwc.src.signal import NoisyData
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 dataset = Dataset()
@@ -91,6 +94,36 @@ print("\tIndices shape:", test_data.indices.shape)
 print("\tClasses shape:", test_data.classes.shape)
 print("\tClass instances:", np.bincount(test_data.classes))
 
+
+# %%
+# compare wavelet denoisuing vs bandpass filtering vs no filtering
+
+base_data = train_data.data.copy()
+
+noisy_data = NoisyData(train_data)
+noisy_data.noisify(0.2)
+
+wavelet_filter = BandpassFilter(noisy_data)
+wavelet_filter.appply_wavelet_denoise(wavelet='db4', level=4, alpha=2.0)
+
+wavelet_filter_2 = BandpassFilter(noisy_data)
+wavelet_filter_2.appply_wavelet_denoise(wavelet='db4', level=4, alpha=1.0)
+
+wavelet_filter_3 = BandpassFilter(noisy_data)
+wavelet_filter_3.appply_wavelet_denoise(wavelet='db4', level=4, alpha=0.1)
+
+
+plt.plot(base_data, label='Original Signal', alpha=0.5)
+plt.plot(noisy_data.data, label='Noisy Signal', alpha=0.5)
+plt.plot(wavelet_filter.filtered_data, label='Wavelet Denoised (Alpha 2.0)', alpha=0.8)
+plt.plot(wavelet_filter_2.filtered_data, label='Wavelet Denoised (Alpha 1.0)', alpha=0.8)
+plt.plot(wavelet_filter_3.filtered_data, label='Wavelet Denoised (Alpha 0.5)', alpha=0.8)
+
+plt.legend()
+plt.title("Signal Filtering Comparison")
+plt.xlabel("Samples")
+plt.ylabel("Amplitude")
+plt.show()
 
 # %%
 # identify the spacing between spikes in the training set
@@ -173,10 +206,10 @@ from cwc.src.signal import BandpassFilter
 import matplotlib.pyplot as plt
 
 train_filter = BandpassFilter(train_data)
-train_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+#train_filter.appply_wavelet_denoise(alpha=0.5)
 
 test_filter = BandpassFilter(test_data)
-test_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+#test_filter.appply_wavelet_denoise(alpha=0.5)
 
 if in_jupyter():
     plt.plot(train_filter.filtered_data)
@@ -192,8 +225,8 @@ if in_jupyter():
 
 from cwc.src.signal import SpikeDetector
 
-mad_gain = 3.3
-min_distance = 60
+mad_gain = 4.0
+min_distance = 25
 
 train_spikes = SpikeDetector(train_filter)
 train_mad = train_spikes.calculate_mad()
@@ -302,30 +335,22 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions
 
 min_distance = 60
 
+mad_gains = [3.6, 3.0, 2.6]
+
 print("====STARTING NOISY DATA TESTS====")
 for i, noisy_dataset in enumerate(noisy_datasets):
     
     unlabelled_filter = BandpassFilter(noisy_dataset)
-    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    #unlabelled_filter.appply_wavelet_denoise()
     
     unlabelled_spikes = SpikeDetector(unlabelled_filter)
     unlabelled_mad = unlabelled_spikes.calculate_mad()
-    unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=2.5, distance=min_distance)
+    unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=mad_gains[i], distance=min_distance)
 
     if in_jupyter():
         plt.plot(unlabelled_filter.filtered_data)
         plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
         plt.show()
-    
-    unlabelled_processor = SignalProcessor(noisy_dataset)
-    unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
-    unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
-    unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
-    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
-    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
-    unlabelled_processor.extract_features()
-    
-    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
     
     metrics = evaluate_detection_proper(unlabelled_spikes.detected_spikes, 
                                        unlabelled_spikes.indices, 
@@ -335,50 +360,17 @@ for i, noisy_dataset in enumerate(noisy_datasets):
     print(f"P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1']:.3f}")
 
 
-for i, noisy_dataset in enumerate(noisy_datasets):
-    
-    unlabelled_filter = BandpassFilter(noisy_dataset)
-    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
-    
-    unlabelled_spikes = SpikeDetector(unlabelled_filter)
-    unlabelled_mad = unlabelled_spikes.calculate_mad()
-    unlabelled_spikes.adaptive_detect_spikes(distance=min_distance)
-
-    if in_jupyter():
-        plt.plot(unlabelled_filter.filtered_data)
-        plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
-        plt.show()
-    
-    unlabelled_processor = SignalProcessor(noisy_dataset)
-    unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
-    unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
-    unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
-    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
-    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
-    unlabelled_processor.extract_features()
-    
-    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
-
-    metrics = evaluate_detection_proper(unlabelled_spikes.detected_spikes, 
-                                       unlabelled_spikes.indices, 
-                                       tolerance=50)
-    
-    print(f"Adaptive Spike Detection ({noise_levels[i]}):")    
-    print(f"P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1']:.3f}")
-
-print("====FINISHED NOISY DATA TESTS====")
-
 # %%
 # SYSTEMATIC THRESHOLD SWEEP
 print("====THRESHOLD SWEEP====")
 
-test_gains = np.arange(1.6, 3.2, 0.1)
+test_gains = np.arange(1.6, 5.0, 0.1)
 
 for noise_idx, noisy_dataset in enumerate(noisy_datasets):
     print(f"\n=== Noise Level {noise_levels[noise_idx]} ===")
     
     unlabelled_filter = BandpassFilter(noisy_dataset)
-    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    #unlabelled_filter.appply_wavelet_denoise(alpha=0.0)
     
     best_f1 = 0
     best_gain = 0
@@ -414,7 +406,8 @@ for noise_idx, noisy_dataset in enumerate(noisy_datasets):
 # %%
 # Now apply to the other datasets
 unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
-mad_gains = [2.5, 2.5, 2.5, 2.5, 2.5]
+mad_gains = [3.1, 2.7, 2.6, 2.5, 2.4]
+min_distance = 60
 
 i = 0
 for dataset_path in unlabelled_datasets:
@@ -426,21 +419,23 @@ for dataset_path in unlabelled_datasets:
     unlabelled_data.load_from_mat_unlabelled(dataset_path)
     
     unlabelled_filter = BandpassFilter(unlabelled_data)
-    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    #unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
     
     unlabelled_spikes = SpikeDetector(unlabelled_filter)
     unlabelled_mad = unlabelled_spikes.calculate_mad()
     unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=mad_gain, distance=min_distance)
 
-    if in_jupyter():
+    if in_jupyter() or True:
         plt.plot(unlabelled_filter.filtered_data)
         plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
+        plt.title(f"Detected Spikes in {dataset_path} (MAD Gain: {mad_gain})")
         plt.show()
     
     unlabelled_processor = SignalProcessor(unlabelled_data)
     unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
     unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
     unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
+
     unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
     unlabelled_processor.pca = processor.pca  # Use the same PCA as training
     unlabelled_processor.extract_features()

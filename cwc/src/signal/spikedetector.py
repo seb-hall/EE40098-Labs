@@ -21,7 +21,7 @@ class SpikeDetector:
         threshold = mad_gain * mad
 
         # distance is minimum number of samples between peaks
-        peaks, _ = find_peaks(self.data * -1.0, height=threshold, distance=distance)
+        peaks, _ = find_peaks(self.data, height=threshold, distance=distance)
 
         self.detected_spikes = peaks
 
