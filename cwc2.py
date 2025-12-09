@@ -116,10 +116,12 @@ incorrect_detections = false_positives + (len(train_spikes.indices) - correct_de
 
 print("Training Set Spike Detection:")
 print("\tCorrect Detections:", correct_detections, "out of ", len(train_spikes.indices))
+print("\tTotal Detected Spikes:", len(train_spikes.detected_spikes))
 print("\tFalse Positives:", false_positives)
 print("\tFalse Negatives:", len(train_spikes.indices) - correct_detections)
 print("\tIncorrect Detections:", incorrect_detections)
-print("\tAccuracy: {:.2f}%".format(100 * correct_detections / (correct_detections + incorrect_detections)))
+print("\tRecall: {:.2f}%".format(100 * correct_detections / len(train_spikes.indices)))
+print("\tPrecision: {:.2f}%".format(100 * correct_detections / (correct_detections + false_positives)))
 
 # plot detected spikes on training data, alonside the true spike indices
 
@@ -129,7 +131,7 @@ if in_jupyter():
     plt.scatter(train_spikes.indices, train_filter.filtered_data[train_spikes.indices], color='green', marker='x')
     plt.show()
 
-if in_jupyter() or True:
+if in_jupyter():
     plt.plot(test_filter.filtered_data)
     plt.scatter(test_spikes.detected_spikes, test_filter.filtered_data[test_spikes.detected_spikes], color='red')
     plt.scatter(test_spikes.indices, test_filter.filtered_data[test_spikes.indices], color='green', marker='x')
@@ -196,8 +198,13 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions
 # %%
 # Now apply to the other datasets
 unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
+mad_gains = [2.5, 2.5, 2.5, 2.5, 2.5]
 
+i = 0
 for dataset_path in unlabelled_datasets:
+
+    mad_gain = mad_gains[i]
+    i += 1
 
     unlabelled_data = Dataset()
     unlabelled_data.load_from_mat_unlabelled(dataset_path)
@@ -228,9 +235,18 @@ for dataset_path in unlabelled_datasets:
     unlabelled_data.write_to_mat(dataset_path.replace('cwc/data/', 'cwc/data/output/'), unlabelled_processor.aligned_indices, unlabelled_predictions)
     print(f"Predictions saved to {dataset_path.replace('cwc/data/;', 'cwc/data/output/')}")
     print(f"Predictions for {dataset_path}: {np.bincount(unlabelled_predictions)}")
+    print(f"Total spikes detected: {len(unlabelled_processor.aligned_indices)}")
 
     
     
 
+
+# %%
+# Add this after your loop to verify
+import scipy.io as spio
+test_file = spio.loadmat('cwc/data/output/D6.mat')
+print(f"D2 Index length: {len(test_file['Index'][0])}")
+print(f"D2 Class length: {len(test_file['Class'][0])}")
+print(f"Match: {len(test_file['Index']) == len(test_file['Class'])}")
 
 
