@@ -265,7 +265,7 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions
 # %%
 # test on noisy data
 
-min_distance = 25
+min_distance = 60
 
 print("====STARTING NOISY DATA TESTS====")
 for i, noisy_dataset in enumerate(noisy_datasets):
