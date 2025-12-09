@@ -4,9 +4,9 @@ from scipy.signal import find_peaks
 class SpikeDetector:
 
     def __init__(self, filtered_dataset):
-        self.data = filtered_dataset.filtered_data
-        self.indices = filtered_dataset.indices
-        self.classes = filtered_dataset.classes
+        self.data = filtered_dataset.filtered_data.copy()
+        self.indices = filtered_dataset.indices.copy()
+        self.classes = filtered_dataset.classes.copy()
 
         self.detected_spikes = np.array([])
 
