@@ -25,6 +25,7 @@ plt.style.use("dark_background")
 # LOAD BASE DATASET
 
 from cwc.src.data import Dataset
+from cwc.src.signal import NoisyData
 
 
 dataset = Dataset()
@@ -65,6 +66,28 @@ if in_jupyter():
 if in_jupyter():
     plt.plot(test_data.data)
     plt.show()
+
+# %%
+# MAKE NOISIER DATASETS
+
+noise_levels = [0.1, 0.3, 0.5]
+
+noisy_datasets = []
+
+for noise_level in noise_levels:
+    noisy_data_maker = NoisyData(train_data)
+    noisy_data_maker.noisify(noise_level)
+    noisy_datasets.append(noisy_data_maker)
+    print(f"\nNoisy Dataset (noise level={noise_level}):")
+    print("\tData shape:", noisy_data_maker.data.shape)
+    print("\tIndices shape:", noisy_data_maker.indices.shape)
+    print("\tClasses shape:", noisy_data_maker.classes.shape)
+    print("\tClass instances:", np.bincount(noisy_data_maker.classes))
+
+    if in_jupyter():
+        plt.plot(noisy_data_maker.data)
+        plt.show()
+
 
 # %%
 from cwc.src.signal import BandpassFilter
@@ -194,6 +217,105 @@ total_predictions = len(predictions)
 print("Test Set Classification:")
 print("\tCorrect Predictions:", correct_predictions, "out of ", total_predictions)
 print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions if total_predictions > 0 else 0))
+
+# %%
+# test on noisy data
+
+print("====STARTING NOISY DATA TESTS====")
+for i, noisy_dataset in enumerate(noisy_datasets):
+    
+    unlabelled_filter = BandpassFilter(noisy_dataset)
+    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    
+    unlabelled_spikes = SpikeDetector(unlabelled_filter)
+    unlabelled_mad = unlabelled_spikes.calculate_mad()
+    unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=2.5, distance=min_distance)
+
+    if in_jupyter():
+        plt.plot(unlabelled_filter.filtered_data)
+        plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
+        plt.show()
+    
+    unlabelled_processor = SignalProcessor(noisy_dataset)
+    unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
+    unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
+    unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
+    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
+    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
+    unlabelled_processor.extract_features()
+    
+    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
+
+    # now evaluate against ground truth
+    correct_detections = 0
+    false_positives = 0
+    false_negatives = 0
+
+    for detected_spike in unlabelled_spikes.detected_spikes:
+        if any(np.abs(unlabelled_spikes.indices - detected_spike) <= min_distance):
+            correct_detections += 1
+        else:
+            false_positives += 1
+
+    incorrect_detections = false_positives + (len(unlabelled_spikes.indices) - correct_detections)
+
+    print(f"Single Pass Spike Detection ({noise_levels[i]}):")
+    print("\tCorrect Detections:", correct_detections, "out of ", len(unlabelled_spikes.indices))
+    print("\tTotal Detected Spikes:", len(unlabelled_spikes.detected_spikes))
+    print("\tFalse Positives:", false_positives)
+    print("\tFalse Negatives:", len(unlabelled_spikes.indices) - correct_detections)
+    print("\tIncorrect Detections:", incorrect_detections)
+    print("\tPrecision: {:.2f}%".format(100 * correct_detections / (correct_detections + false_positives)))
+    print("\tRecall: {:.2f}%".format(100 * correct_detections / len(unlabelled_spikes.indices)))
+
+
+for i, noisy_dataset in enumerate(noisy_datasets):
+    
+    unlabelled_filter = BandpassFilter(noisy_dataset)
+    unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
+    
+    unlabelled_spikes = SpikeDetector(unlabelled_filter)
+    unlabelled_mad = unlabelled_spikes.calculate_mad()
+    unlabelled_spikes.two_pass_detection(mad=unlabelled_mad, initial_gain=3.0, secondary_gain=3.0, distance=min_distance)
+
+    if in_jupyter():
+        plt.plot(unlabelled_filter.filtered_data)
+        plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
+        plt.show()
+    
+    unlabelled_processor = SignalProcessor(noisy_dataset)
+    unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
+    unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
+    unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
+    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
+    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
+    unlabelled_processor.extract_features()
+    
+    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
+
+    # now evaluate against ground truth
+    correct_detections = 0
+    false_positives = 0
+    false_negatives = 0
+
+    for detected_spike in unlabelled_spikes.detected_spikes:
+        if any(np.abs(unlabelled_spikes.indices - detected_spike) <= min_distance):
+            correct_detections += 1
+        else:
+            false_positives += 1
+
+    incorrect_detections = false_positives + (len(unlabelled_spikes.indices) - correct_detections)
+
+    print(f"Two Pass Spike Detection ({noise_levels[i]}):")
+    print("\tCorrect Detections:", correct_detections, "out of ", len(unlabelled_spikes.indices))
+    print("\tTotal Detected Spikes:", len(unlabelled_spikes.detected_spikes))
+    print("\tFalse Positives:", false_positives)
+    print("\tFalse Negatives:", len(unlabelled_spikes.indices) - correct_detections)
+    print("\tIncorrect Detections:", incorrect_detections)
+    print("\tPrecision: {:.2f}%".format(100 * correct_detections / (correct_detections + false_positives)))
+    print("\tRecall: {:.2f}%".format(100 * correct_detections / len(unlabelled_spikes.indices)))
+
+print("====FINISHED NOISY DATA TESTS====")
 
 # %%
 # Now apply to the other datasets

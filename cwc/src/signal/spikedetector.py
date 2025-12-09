@@ -24,3 +24,24 @@ class SpikeDetector:
         peaks, _ = find_peaks(self.data * -1.0, height=threshold, distance=distance)
 
         self.detected_spikes = peaks
+
+    def two_pass_detection(self, mad, initial_gain=2.5, secondary_gain=2.0, distance=60):
+        # First pass: conservative (higher threshold)
+        peaks1, _ = find_peaks(self.data * -1.0, 
+                            height=initial_gain * mad, 
+                            distance=distance)
+        
+        # Subtract detected spikes (template subtraction)
+        residual = self.data.copy()
+        for peak in peaks1:
+            # Zero out region around detected spike
+            start = max(0, peak - 32)
+            end = min(len(residual), peak + 32)
+            residual[start:end] = 0
+        
+        # Second pass: more aggressive on residual
+        peaks2, _ = find_peaks(residual * -1.0, 
+                            height=secondary_gain * mad, 
+                            distance=distance)
+        
+        self.detected_spikes = np.sort(np.concatenate([peaks1, peaks2]))
