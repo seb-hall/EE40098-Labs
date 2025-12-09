@@ -58,6 +58,50 @@ print("\tClass instances:", np.bincount(test_data.classes))
 
 
 # %%
+# identify the spacing between spikes in the training set
+# sort the indices and calculate the differences between consecutive indices
+
+indices = train_data.indices.copy()
+indices.sort()
+
+distances = {}
+for i in range(1, len(indices)):
+    distance = indices[i] - indices[i - 1]
+    
+    if distance not in distances:
+        distances[distance] = 0
+    
+    distances[distance] += 1
+
+# sort the distances dictionary by key
+distances = dict(sorted(distances.items()))
+
+# How many spikes are within 60 samples of each other?
+close_pairs = 0
+for i in range(len(indices)-1):
+    if indices[i+1] - indices[i] < 60:
+        close_pairs += 1
+
+print(f"Spike pairs closer than 60 samples: {close_pairs}")
+print(f"Percentage of spikes affected: {100*close_pairs/len(indices):.1f}%")
+
+for distance, count in distances.items():
+    print(f"Distance: {distance} samples, Count: {count}")
+
+    
+
+# now plot a histogram of the distances
+
+if in_jupyter():
+    plt.figure(figsize=(10, 5))
+    plt.bar(distances.keys(), distances.values())
+    plt.title("Histogram of Distances Between Spikes in Training Set")
+    plt.xlabel("Distance (samples)")
+    plt.ylabel("Count")
+    plt.show()
+
+
+# %%
 
 if in_jupyter():
     plt.plot(train_data.data)
@@ -221,6 +265,8 @@ print("\tAccuracy: {:.2f}%".format(100 * correct_predictions / total_predictions
 # %%
 # test on noisy data
 
+min_distance = 25
+
 print("====STARTING NOISY DATA TESTS====")
 for i, noisy_dataset in enumerate(noisy_datasets):
     
@@ -276,7 +322,7 @@ for i, noisy_dataset in enumerate(noisy_datasets):
     
     unlabelled_spikes = SpikeDetector(unlabelled_filter)
     unlabelled_mad = unlabelled_spikes.calculate_mad()
-    unlabelled_spikes.two_pass_detection(mad=unlabelled_mad, initial_gain=3.0, secondary_gain=3.0, distance=min_distance)
+    unlabelled_spikes.adaptive_detect_spikes(distance=min_distance)
 
     if in_jupyter():
         plt.plot(unlabelled_filter.filtered_data)
@@ -306,7 +352,7 @@ for i, noisy_dataset in enumerate(noisy_datasets):
 
     incorrect_detections = false_positives + (len(unlabelled_spikes.indices) - correct_detections)
 
-    print(f"Two Pass Spike Detection ({noise_levels[i]}):")
+    print(f"Adaptive Spike Detection ({noise_levels[i]}):")
     print("\tCorrect Detections:", correct_detections, "out of ", len(unlabelled_spikes.indices))
     print("\tTotal Detected Spikes:", len(unlabelled_spikes.detected_spikes))
     print("\tFalse Positives:", false_positives)

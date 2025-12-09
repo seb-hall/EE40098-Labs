@@ -25,23 +25,34 @@ class SpikeDetector:
 
         self.detected_spikes = peaks
 
-    def two_pass_detection(self, mad, initial_gain=2.5, secondary_gain=2.0, distance=60):
-        # First pass: conservative (higher threshold)
-        peaks1, _ = find_peaks(self.data * -1.0, 
-                            height=initial_gain * mad, 
-                            distance=distance)
+    def adaptive_detect_spikes(self, distance=60):
+        """
+        Automatically determine threshold based on noise characteristics
+        """
+        mad = self.calculate_mad()
         
-        # Subtract detected spikes (template subtraction)
-        residual = self.data.copy()
-        for peak in peaks1:
-            # Zero out region around detected spike
-            start = max(0, peak - 32)
-            end = min(len(residual), peak + 32)
-            residual[start:end] = 0
+        # Estimate SNR from signal statistics
+        signal_peaks = self.data[self.data < -3*mad]  # Likely spikes
+        if len(signal_peaks) > 10:
+            signal_strength = np.abs(np.percentile(signal_peaks, 5))  # 5th percentile of peaks
+            snr_estimate = signal_strength / mad
+        else:
+            snr_estimate = 10  # Default assumption
         
-        # Second pass: more aggressive on residual
-        peaks2, _ = find_peaks(residual * -1.0, 
-                            height=secondary_gain * mad, 
-                            distance=distance)
+        # Adaptive threshold
+        if snr_estimate > 15:     # Very clean (D2)
+            mad_gain = 2.8
+        elif snr_estimate > 8:    # Clean (D3)
+            mad_gain = 2.3
+        elif snr_estimate > 4:    # Moderate noise (D4)
+            mad_gain = 2.0
+        elif snr_estimate > 2:    # Noisy (D5)
+            mad_gain = 1.7
+        else:                     # Very noisy (D6)
+            mad_gain = 1.5
         
-        self.detected_spikes = np.sort(np.concatenate([peaks1, peaks2]))
+        threshold = mad_gain * mad
+        peaks, _ = find_peaks(self.data * -1.0, height=threshold, distance=distance)
+        
+        self.detected_spikes = peaks
+        print(f"SNR estimate: {snr_estimate:.2f}, MAD gain: {mad_gain:.2f}")
