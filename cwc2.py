@@ -20,6 +20,41 @@ import numpy as np
 
 plt.style.use("dark_background")
 
+def evaluate_detection_proper(detected_spikes, true_indices, tolerance=50):
+    """
+    Proper evaluation - each true spike can only be matched once
+    """
+    detected_spikes = np.array(detected_spikes)
+    true_indices = np.array(true_indices)
+    
+    true_matched = np.zeros(len(true_indices), dtype=bool)
+    detected_matched = np.zeros(len(detected_spikes), dtype=bool)
+    
+    # For each detected spike, find closest true spike
+    for i, det_spike in enumerate(detected_spikes):
+        distances = np.abs(true_indices - det_spike)
+        closest_idx = np.argmin(distances)
+        
+        # If within tolerance and not already matched
+        if distances[closest_idx] <= tolerance and not true_matched[closest_idx]:
+            true_matched[closest_idx] = True
+            detected_matched[i] = True
+    
+    true_positives = np.sum(true_matched)
+    false_positives = np.sum(~detected_matched)
+    false_negatives = np.sum(~true_matched)
+    
+    precision = true_positives / len(detected_spikes) if len(detected_spikes) > 0 else 0
+    recall = true_positives / len(true_indices) if len(true_indices) > 0 else 0
+    
+    return {
+        'TP': true_positives,
+        'FP': false_positives,
+        'FN': false_negatives,
+        'precision': precision,
+        'recall': recall,
+        'f1': 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    }
 
 # %%
 # LOAD BASE DATASET
@@ -291,28 +326,13 @@ for i, noisy_dataset in enumerate(noisy_datasets):
     unlabelled_processor.extract_features()
     
     unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
-
-    # now evaluate against ground truth
-    correct_detections = 0
-    false_positives = 0
-    false_negatives = 0
-
-    for detected_spike in unlabelled_spikes.detected_spikes:
-        if any(np.abs(unlabelled_spikes.indices - detected_spike) <= min_distance):
-            correct_detections += 1
-        else:
-            false_positives += 1
-
-    incorrect_detections = false_positives + (len(unlabelled_spikes.indices) - correct_detections)
-
-    print(f"Single Pass Spike Detection ({noise_levels[i]}):")
-    print("\tCorrect Detections:", correct_detections, "out of ", len(unlabelled_spikes.indices))
-    print("\tTotal Detected Spikes:", len(unlabelled_spikes.detected_spikes))
-    print("\tFalse Positives:", false_positives)
-    print("\tFalse Negatives:", len(unlabelled_spikes.indices) - correct_detections)
-    print("\tIncorrect Detections:", incorrect_detections)
-    print("\tPrecision: {:.2f}%".format(100 * correct_detections / (correct_detections + false_positives)))
-    print("\tRecall: {:.2f}%".format(100 * correct_detections / len(unlabelled_spikes.indices)))
+    
+    metrics = evaluate_detection_proper(unlabelled_spikes.detected_spikes, 
+                                       unlabelled_spikes.indices, 
+                                       tolerance=50)
+    
+    print(f"Single Pass Spike Detection ({noise_levels[i]}):")    
+    print(f"P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1']:.3f}")
 
 
 for i, noisy_dataset in enumerate(noisy_datasets):
@@ -339,27 +359,12 @@ for i, noisy_dataset in enumerate(noisy_datasets):
     
     unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
 
-    # now evaluate against ground truth
-    correct_detections = 0
-    false_positives = 0
-    false_negatives = 0
-
-    for detected_spike in unlabelled_spikes.detected_spikes:
-        if any(np.abs(unlabelled_spikes.indices - detected_spike) <= min_distance):
-            correct_detections += 1
-        else:
-            false_positives += 1
-
-    incorrect_detections = false_positives + (len(unlabelled_spikes.indices) - correct_detections)
-
-    print(f"Adaptive Spike Detection ({noise_levels[i]}):")
-    print("\tCorrect Detections:", correct_detections, "out of ", len(unlabelled_spikes.indices))
-    print("\tTotal Detected Spikes:", len(unlabelled_spikes.detected_spikes))
-    print("\tFalse Positives:", false_positives)
-    print("\tFalse Negatives:", len(unlabelled_spikes.indices) - correct_detections)
-    print("\tIncorrect Detections:", incorrect_detections)
-    print("\tPrecision: {:.2f}%".format(100 * correct_detections / (correct_detections + false_positives)))
-    print("\tRecall: {:.2f}%".format(100 * correct_detections / len(unlabelled_spikes.indices)))
+    metrics = evaluate_detection_proper(unlabelled_spikes.detected_spikes, 
+                                       unlabelled_spikes.indices, 
+                                       tolerance=50)
+    
+    print(f"Adaptive Spike Detection ({noise_levels[i]}):")    
+    print(f"P={metrics['precision']:.3f}, R={metrics['recall']:.3f}, F1={metrics['f1']:.3f}")
 
 print("====FINISHED NOISY DATA TESTS====")
 
