@@ -7,10 +7,10 @@ class Classifier:
     def __init__(self, features, labels):
 
         self.classifier = RandomForestClassifier(
-            n_estimators=500,  # More trees
-            max_depth=None,    # Allow full depth
-            min_samples_split=2,
-            min_samples_leaf=1,
+            n_estimators=1000,  # More trees
+            max_depth=20,    # Allow full depth
+            min_samples_split=5,
+            min_samples_leaf=2,
             max_features='sqrt',
             n_jobs=-1,
             random_state=42,

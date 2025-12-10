@@ -321,6 +321,268 @@ print(f"Classifier trained with {len(processor.correlated_classes)} samples")
 print(f"Training accuracy: {classifier.accuracy:.2%}")
 
 # %%
+# Original training data
+train_filter = BandpassFilter(train_data)
+train_spikes = SpikeDetector(train_filter)
+train_mad = train_spikes.calculate_mad()
+train_spikes.detect_spikes(mad=train_mad, mad_gain=4.0, distance=25)
+
+processor = SignalProcessor(train_data)
+processor.filtered_data = train_filter.filtered_data
+processor.detected_spikes = train_spikes.detected_spikes
+processor.align_spikes(target_peak_pos=20, window_size=64)
+processor.extract_features()
+processor.correlate_classes(distance_threshold=50)
+
+# ADD AUGMENTED TRAINING DATA
+augmented_features = [processor.features]
+augmented_labels = [processor.correlated_classes]
+
+# Create noisy versions and add to training
+for noise_level in [0.15, 0.30, 0.45]:
+    noisy_version = NoisyData(train_data)
+    noisy_version.noisify(noise_level)
+    
+    noisy_filter = BandpassFilter(noisy_version)
+    noisy_spikes = SpikeDetector(noisy_filter)
+    mad = noisy_spikes.calculate_mad()
+    noisy_spikes.detect_spikes(mad=mad, mad_gain=3.5, distance=25)
+    
+    noisy_processor = SignalProcessor(noisy_version)
+    noisy_processor.filtered_data = noisy_filter.filtered_data
+    noisy_processor.detected_spikes = noisy_spikes.detected_spikes
+    noisy_processor.align_spikes(target_peak_pos=20, window_size=64)
+    noisy_processor.scaler = processor.scaler  # Share scaler
+    noisy_processor.pca = processor.pca  # Share PCA
+    noisy_processor.extract_features()
+    noisy_processor.correlate_classes(distance_threshold=50)
+    
+    augmented_features.append(noisy_processor.features)
+    augmented_labels.append(noisy_processor.correlated_classes)
+
+# Combine all training data
+processor.features = np.vstack(augmented_features)
+processor.correlated_classes = np.concatenate(augmented_labels)
+
+# Train on augmented dataset
+classifier = processor.create_classifier()
+print(f"Classifier trained with {len(processor.correlated_classes)} augmented samples")
+
+# %%
+# %%
+# COMPARISON: Old Training vs Augmented Training on Noisy Data
+print("=" * 80)
+print("TRAINING METHOD COMPARISON - Old vs Augmented")
+print("=" * 80)
+
+from cwc.src.data import SignalProcessor
+from cwc.src.signal import BandpassFilter, SpikeDetector, NoisyData
+import numpy as np
+
+# Test noise levels
+test_noise_levels = [0.1, 0.3, 0.5]
+
+# Create test datasets at different noise levels
+print("\nCreating noisy test datasets...")
+noisy_test_datasets = []
+for noise_level in test_noise_levels:
+    noisy_test = NoisyData(test_data)
+    noisy_test.noisify(noise_level)
+    noisy_test_datasets.append(noisy_test)
+    print(f"  Created test set with noise={noise_level}")
+
+# ============================================================================
+# METHOD 1: OLD TRAINING (Clean data only)
+# ============================================================================
+print("\n" + "=" * 80)
+print("METHOD 1: Training on CLEAN data only")
+print("=" * 80)
+
+train_filter_old = BandpassFilter(train_data)
+train_spikes_old = SpikeDetector(train_filter_old)
+train_mad_old = train_spikes_old.calculate_mad()
+train_spikes_old.detect_spikes(mad=train_mad_old, mad_gain=4.0, distance=25)
+
+processor_old = SignalProcessor(train_data)
+processor_old.filtered_data = train_filter_old.filtered_data
+processor_old.detected_spikes = train_spikes_old.detected_spikes
+processor_old.align_spikes(target_peak_pos=20, window_size=64)
+processor_old.extract_features()
+processor_old.correlate_classes(distance_threshold=50)
+
+classifier_old = processor_old.create_classifier()
+print(f"Old method: Trained with {len(processor_old.correlated_classes)} samples")
+print(f"Old method: Training accuracy = {classifier_old.accuracy:.2%}")
+
+# Test old method on noisy data
+print("\nOld Method Performance on Noisy Test Data:")
+print("-" * 80)
+old_results = []
+
+for i, noisy_test in enumerate(noisy_test_datasets):
+    noise_level = test_noise_levels[i]
+    
+    # Process noisy test data
+    test_filter_noisy = BandpassFilter(noisy_test)
+    test_spikes_noisy = SpikeDetector(test_filter_noisy)
+    test_mad_noisy = test_spikes_noisy.calculate_mad()
+    test_spikes_noisy.detect_spikes(mad=test_mad_noisy, mad_gain=3.5, distance=60)
+    
+    test_processor_noisy = SignalProcessor(noisy_test)
+    test_processor_noisy.filtered_data = test_filter_noisy.filtered_data
+    test_processor_noisy.detected_spikes = test_spikes_noisy.detected_spikes
+    test_processor_noisy.align_spikes(target_peak_pos=20, window_size=64)
+    test_processor_noisy.scaler = processor_old.scaler
+    test_processor_noisy.pca = processor_old.pca
+    test_processor_noisy.extract_features()
+    
+    # Classify
+    predictions_old = classifier_old.classifier.predict(test_processor_noisy.features)
+    
+    # Evaluate
+    correct = 0
+    total = 0
+    for j, idx in enumerate(test_processor_noisy.aligned_indices):
+        distances = np.abs(noisy_test.indices - idx)
+        closest = np.argmin(distances)
+        if distances[closest] <= 50:
+            total += 1
+            if predictions_old[j] == noisy_test.classes[closest]:
+                correct += 1
+    
+    accuracy = 100 * correct / total if total > 0 else 0
+    old_results.append(accuracy)
+    print(f"  Noise={noise_level:.1f}: Accuracy={accuracy:.1f}% ({correct}/{total} correct)")
+
+# ============================================================================
+# METHOD 2: AUGMENTED TRAINING (Clean + Noisy data)
+# ============================================================================
+print("\n" + "=" * 80)
+print("METHOD 2: Training on CLEAN + AUGMENTED NOISY data")
+print("=" * 80)
+
+train_filter_new = BandpassFilter(train_data)
+train_spikes_new = SpikeDetector(train_filter_new)
+train_mad_new = train_spikes_new.calculate_mad()
+train_spikes_new.detect_spikes(mad=train_mad_new, mad_gain=4.0, distance=25)
+
+processor_new = SignalProcessor(train_data)
+processor_new.filtered_data = train_filter_new.filtered_data
+processor_new.detected_spikes = train_spikes_new.detected_spikes
+processor_new.align_spikes(target_peak_pos=20, window_size=64)
+processor_new.extract_features()
+processor_new.correlate_classes(distance_threshold=50)
+
+# Collect augmented training data
+augmented_features = [processor_new.features]
+augmented_labels = [processor_new.correlated_classes]
+
+print("Adding augmented noisy training data...")
+for noise_level in [0.15, 0.30, 0.45]:
+    noisy_version = NoisyData(train_data)
+    noisy_version.noisify(noise_level)
+    
+    noisy_filter = BandpassFilter(noisy_version)
+    noisy_spikes = SpikeDetector(noisy_filter)
+    mad = noisy_spikes.calculate_mad()
+    noisy_spikes.detect_spikes(mad=mad, mad_gain=3.5, distance=25)
+    
+    noisy_processor = SignalProcessor(noisy_version)
+    noisy_processor.filtered_data = noisy_filter.filtered_data
+    noisy_processor.detected_spikes = noisy_spikes.detected_spikes
+    noisy_processor.align_spikes(target_peak_pos=20, window_size=64)
+    noisy_processor.scaler = processor_new.scaler
+    noisy_processor.pca = processor_new.pca
+    noisy_processor.extract_features()
+    noisy_processor.correlate_classes(distance_threshold=50)
+    
+    augmented_features.append(noisy_processor.features)
+    augmented_labels.append(noisy_processor.correlated_classes)
+    print(f"  Added {len(noisy_processor.correlated_classes)} samples at noise={noise_level}")
+
+# Combine all training data
+processor_new.features = np.vstack(augmented_features)
+processor_new.correlated_classes = np.concatenate(augmented_labels)
+
+classifier_new = processor_new.create_classifier()
+print(f"\nNew method: Trained with {len(processor_new.correlated_classes)} samples")
+print(f"New method: Training accuracy = {classifier_new.accuracy:.2%}")
+
+# Test new method on noisy data
+print("\nNew Method Performance on Noisy Test Data:")
+print("-" * 80)
+new_results = []
+
+for i, noisy_test in enumerate(noisy_test_datasets):
+    noise_level = test_noise_levels[i]
+    
+    # Process noisy test data (same detection as before)
+    test_filter_noisy = BandpassFilter(noisy_test)
+    test_spikes_noisy = SpikeDetector(test_filter_noisy)
+    test_mad_noisy = test_spikes_noisy.calculate_mad()
+    test_spikes_noisy.detect_spikes(mad=test_mad_noisy, mad_gain=3.5, distance=60)
+    
+    test_processor_noisy = SignalProcessor(noisy_test)
+    test_processor_noisy.filtered_data = test_filter_noisy.filtered_data
+    test_processor_noisy.detected_spikes = test_spikes_noisy.detected_spikes
+    test_processor_noisy.align_spikes(target_peak_pos=20, window_size=64)
+    test_processor_noisy.scaler = processor_new.scaler
+    test_processor_noisy.pca = processor_new.pca
+    test_processor_noisy.extract_features()
+    
+    # Classify
+    predictions_new = classifier_new.classifier.predict(test_processor_noisy.features)
+    
+    # Evaluate
+    correct = 0
+    total = 0
+    for j, idx in enumerate(test_processor_noisy.aligned_indices):
+        distances = np.abs(noisy_test.indices - idx)
+        closest = np.argmin(distances)
+        if distances[closest] <= 50:
+            total += 1
+            if predictions_new[j] == noisy_test.classes[closest]:
+                correct += 1
+    
+    accuracy = 100 * correct / total if total > 0 else 0
+    new_results.append(accuracy)
+    print(f"  Noise={noise_level:.1f}: Accuracy={accuracy:.1f}% ({correct}/{total} correct)")
+
+# ============================================================================
+# COMPARISON SUMMARY
+# ============================================================================
+print("\n" + "=" * 80)
+print("COMPARISON SUMMARY")
+print("=" * 80)
+print(f"{'Noise Level':<15} {'Old Method':<15} {'New Method':<15} {'Improvement':<15}")
+print("-" * 80)
+
+total_old = 0
+total_new = 0
+
+for i, noise_level in enumerate(test_noise_levels):
+    improvement = new_results[i] - old_results[i]
+    improvement_str = f"+{improvement:.1f}%" if improvement >= 0 else f"{improvement:.1f}%"
+    print(f"{noise_level:<15.1f} {old_results[i]:<14.1f}% {new_results[i]:<14.1f}% {improvement_str:<15}")
+    total_old += old_results[i]
+    total_new += new_results[i]
+
+avg_old = total_old / len(test_noise_levels)
+avg_new = total_new / len(test_noise_levels)
+avg_improvement = avg_new - avg_old
+
+print("-" * 80)
+print(f"{'AVERAGE':<15} {avg_old:<14.1f}% {avg_new:<14.1f}% {'+' if avg_improvement >= 0 else ''}{avg_improvement:.1f}%")
+print("=" * 80)
+
+if avg_improvement > 0:
+    print(f"\n✓ AUGMENTED TRAINING WINS by {avg_improvement:.1f}% on average!")
+    print("  Recommendation: Use augmented training for final submission")
+else:
+    print(f"\n✗ Old training performs better by {abs(avg_improvement):.1f}%")
+    print("  Recommendation: Stick with clean training only")
+
+# %%
 # Create new processor for test data
 test_processor = SignalProcessor(test_data)
 test_processor.filtered_data = test_filter.filtered_data
@@ -466,7 +728,7 @@ for dataset_path in unlabelled_datasets:
     unlabelled_processor.pca = processor.pca  # Use the same PCA as training
     unlabelled_processor.extract_features()
     
-    unlabelled_predictions = classifier.classifier.predict(unlabelled_processor.features)
+    unlabelled_predictions = classifier_new.classifier.predict(unlabelled_processor.features)
 
 
     unlabelled_data.write_to_mat(dataset_path.replace('cwc/data/', 'cwc/data/output/'), unlabelled_processor.aligned_indices, unlabelled_predictions)
