@@ -60,6 +60,7 @@ def evaluate_detection_proper(detected_spikes, true_indices, tolerance=50):
 # LOAD BASE DATASET
 
 from cwc.src.data import Dataset
+from cwc.src.data import DataNormaliser
 from cwc.src.signal import BandpassFilter
 from cwc.src.signal import NoisyData
 import numpy as np
@@ -113,17 +114,19 @@ wavelet_filter_3 = BandpassFilter(noisy_data)
 wavelet_filter_3.appply_wavelet_denoise(wavelet='db4', level=4, alpha=0.1)
 
 
-plt.plot(base_data, label='Original Signal', alpha=0.5)
-plt.plot(noisy_data.data, label='Noisy Signal', alpha=0.5)
-plt.plot(wavelet_filter.filtered_data, label='Wavelet Denoised (Alpha 2.0)', alpha=0.8)
-plt.plot(wavelet_filter_2.filtered_data, label='Wavelet Denoised (Alpha 1.0)', alpha=0.8)
-plt.plot(wavelet_filter_3.filtered_data, label='Wavelet Denoised (Alpha 0.5)', alpha=0.8)
+if in_jupyter():
+   
+    plt.plot(base_data, label='Original Signal', alpha=0.5)
+    plt.plot(noisy_data.data, label='Noisy Signal', alpha=0.5)
+    plt.plot(wavelet_filter.filtered_data, label='Wavelet Denoised (Alpha 2.0)', alpha=0.8)
+    plt.plot(wavelet_filter_2.filtered_data, label='Wavelet Denoised (Alpha 1.0)', alpha=0.8)
+    plt.plot(wavelet_filter_3.filtered_data, label='Wavelet Denoised (Alpha 0.5)', alpha=0.8)
 
-plt.legend()
-plt.title("Signal Filtering Comparison")
-plt.xlabel("Samples")
-plt.ylabel("Amplitude")
-plt.show()
+    plt.legend()
+    plt.title("Signal Filtering Comparison")
+    plt.xlabel("Samples")
+    plt.ylabel("Amplitude")
+    plt.show()
 
 # %%
 # identify the spacing between spikes in the training set
@@ -199,6 +202,27 @@ for noise_level in noise_levels:
     if in_jupyter():
         plt.plot(noisy_data_maker.data)
         plt.show()
+
+
+# %%
+# add normaliser class
+un_normalised_data = DataNormaliser(train_data)
+un_normalised_data.un_normalise(gain=1.0, cycles=5)
+
+if in_jupyter():
+    plt.plot(un_normalised_data.data)
+    plt.title("Unnormalised Data (gain=5.0, wavelength=5e5)")
+    plt.show()
+
+normalised_data = DataNormaliser(un_normalised_data)
+normalised_data.normalise(window_size=1000)
+
+if in_jupyter() or True:
+    plt.plot(normalised_data.data, label='Normalised Data', alpha=0.5)
+    plt.plot(train_data.data, alpha=0.5, label='Original Data')
+    plt.title("Normalised Data (window_size=1000)")
+    plt.legend()
+    plt.show()
 
 
 # %%
@@ -406,7 +430,7 @@ for noise_idx, noisy_dataset in enumerate(noisy_datasets):
 # %%
 # Now apply to the other datasets
 unlabelled_datasets = ["cwc/data/D2.mat", "cwc/data/D3.mat", "cwc/data/D4.mat", "cwc/data/D5.mat", "cwc/data/D6.mat"]
-mad_gains = [3.1, 2.7, 2.6, 2.5, 2.4]
+mad_gains = [3.2, 3.0, 3.0, 2.9, 2.9]
 min_distance = 60
 
 i = 0
@@ -417,21 +441,23 @@ for dataset_path in unlabelled_datasets:
 
     unlabelled_data = Dataset()
     unlabelled_data.load_from_mat_unlabelled(dataset_path)
+
+    normalised_data = DataNormaliser(unlabelled_data)
+    normalised_data.normalise(window_size=1000)
     
-    unlabelled_filter = BandpassFilter(unlabelled_data)
+    unlabelled_filter = BandpassFilter(normalised_data)
     #unlabelled_filter.apply_band_pass_filter(filter_low=300, filter_high=3000, sample_rate=25000, order=4)
     
     unlabelled_spikes = SpikeDetector(unlabelled_filter)
     unlabelled_mad = unlabelled_spikes.calculate_mad()
     unlabelled_spikes.detect_spikes(mad=unlabelled_mad, mad_gain=mad_gain, distance=min_distance)
 
-    if in_jupyter() or True:
+    if in_jupyter():
         plt.plot(unlabelled_filter.filtered_data)
         plt.scatter(unlabelled_spikes.detected_spikes, unlabelled_filter.filtered_data[unlabelled_spikes.detected_spikes], color='red')
-        plt.title(f"Detected Spikes in {dataset_path} (MAD Gain: {mad_gain})")
         plt.show()
     
-    unlabelled_processor = SignalProcessor(unlabelled_data)
+    unlabelled_processor = SignalProcessor(normalised_data)
     unlabelled_processor.filtered_data = unlabelled_filter.filtered_data
     unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
     unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
