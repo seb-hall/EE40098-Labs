@@ -724,8 +724,8 @@ for dataset_path in unlabelled_datasets:
     unlabelled_processor.detected_spikes = unlabelled_spikes.detected_spikes
     unlabelled_processor.align_spikes(target_peak_pos=20, window_size=64)
 
-    unlabelled_processor.scaler = processor.scaler  # Use the same scaler as training
-    unlabelled_processor.pca = processor.pca  # Use the same PCA as training
+    unlabelled_processor.scaler = processor_new.scaler  # Use the same scaler as training
+    unlabelled_processor.pca = processor_new.pca  # Use the same PCA as training
     unlabelled_processor.extract_features()
     
     unlabelled_predictions = classifier_new.classifier.predict(unlabelled_processor.features)
