@@ -62,7 +62,7 @@ def evaluate_detection_proper(detected_spikes, true_indices, tolerance=50):
 from cwc.src.data import Dataset
 from cwc.src.data import DataNormaliser
 from cwc.src.signal import BandpassFilter
-from cwc.src.signal import NoisyData
+from cwc.src.data import NoisyData
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -299,7 +299,7 @@ if in_jupyter():
 
 # %%
 # After spike detection
-from cwc.src.data import SignalProcessor
+from cwc.src.signal import SignalProcessor
 
 processor = SignalProcessor(train_data)
 processor.filtered_data = train_filter.filtered_data
@@ -375,7 +375,7 @@ print("=" * 80)
 print("TRAINING METHOD COMPARISON - Old vs Augmented")
 print("=" * 80)
 
-from cwc.src.data import SignalProcessor
+from cwc.src.signal import SignalProcessor
 from cwc.src.signal import BandpassFilter, SpikeDetector, NoisyData
 import numpy as np
 
